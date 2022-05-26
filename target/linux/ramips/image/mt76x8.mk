@@ -231,7 +231,6 @@ define Device/hiwifi_hc5661a
   DEVICE_VENDOR := HiWiFi
   DEVICE_MODEL := HC5661A
   SUPPORTED_DEVICES += hc5661a
-  DEVICE_PACKAGES := kmod-sdhci-mt7620
 endef
 TARGET_DEVICES += hiwifi_hc5661a
 
@@ -239,7 +238,7 @@ define Device/hiwifi_hc5761a
   IMAGE_SIZE := 15808k
   DEVICE_VENDOR := HiWiFi
   DEVICE_MODEL := HC5761A
-  DEVICE_PACKAGES := kmod-mt76x0e kmod-usb2 kmod-usb-ohci kmod-sdhci-mt7620
+  DEVICE_PACKAGES := kmod-mt76x0e kmod-usb2 kmod-usb-ohci
 endef
 TARGET_DEVICES += hiwifi_hc5761a
 
@@ -416,7 +415,6 @@ define Device/ravpower_rp-wd009
 	kmod-sdhci-mt7620 kmod-i2c-mt7628 ravpower-mcu
   IMAGES += factory.bin
   IMAGE/factory.bin := $$(sysupgrade_bin) | ravpower-wd009-factory
-  DEFAULT := n
 endef
 TARGET_DEVICES += ravpower_rp-wd009
 

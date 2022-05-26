@@ -88,20 +88,40 @@
 	};
 };
 
-&ethernet {
-	compatible = "mediatek,ralink-mt7621-eth";
-	mediatek,switch = <&gsw>;
+&gmac0 {
 	nvmem-cells = <&macaddr_factory_e000>;
 	nvmem-cell-names = "mac-address";
 };
 
 &switch0 {
-	/delete-property/ compatible;
-	phy-mode = "rgmii";
-};
+	ports {
+		port@0 {
+			status = "okay";
+			label = "lan4";
+		};
 
-&gsw {
-	compatible = "mediatek,ralink-mt7621-gsw";
+		port@1 {
+			status = "okay";
+			label = "lan3";
+		};
+
+		port@2 {
+			status = "okay";
+			label = "lan2";
+		};
+
+		port@3 {
+			status = "okay";
+			label = "lan1";
+		};
+
+		wan: port@4 {
+			status = "okay";
+			label = "wan";
+			nvmem-cells = <&macaddr_factory_e006>;
+			nvmem-cell-names = "mac-address";
+		};
+	};
 };
 
 &state_default {

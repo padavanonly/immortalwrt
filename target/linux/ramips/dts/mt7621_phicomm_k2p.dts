@@ -50,9 +50,7 @@
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <80000000>;
-		m25p,fast-read;
-
+		spi-max-frequency = <10000000>;
 		partitions {
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
@@ -77,46 +75,93 @@
 			};
 
 			partition@50000 {
-				label = "permanent_config";
-				reg = <0x50000 0x50000>;
-				read-only;
-			};
-
-			partition@a0000 {
 				compatible = "denx,uimage";
 				label = "firmware";
-				reg = <0xa0000 0xf60000>;
+				reg = <0x50000 0xfb0000>;
 			};
 		};
 	};
 };
+
 
 &pcie {
 	status = "okay";
 };
 
 &pcie0 {
-	mt76@0,0 {
+	wifi@0,0 {
+		compatible = "mediatek,mt76";
 		reg = <0x0000 0 0 0 0>;
 		mediatek,mtd-eeprom = <&factory 0x0>;
+		mtd-mac-address = <&factory 0x4>;
+
+		/* 5 GHz (phy1) does not take the address from calibration data,
+		   but setting it manually here works */
+		nvmem-cells = <&macaddr_factory_4>;
+		nvmem-cell-names = "mac-address";
 	};
 };
 
-&ethernet {
-	compatible = "mediatek,ralink-mt7621-eth";
-	mediatek,switch = <&gsw>;
+&gmac0 {
 	nvmem-cells = <&macaddr_factory_e000>;
 	nvmem-cell-names = "mac-address";
 };
 
+&gmac1 {
+	nvmem-cells = <&macaddr_factory_e000>;
+	nvmem-cell-names = "mac-address";
+	mac-address-increment = <(-2)>;
+};
+
 &switch0 {
+	/* must delete compatible property */
 	/delete-property/ compatible;
-	phy-mode = "rgmii";
+};
+
+&hnat {
+        mtketh-wan = "eth1";
+        mtketh-ppd = "eth0";
+        mtketh-lan = "eth0";
+	ext-devices = "wlan0","wlan1","rax0","ra0", "rai0","apclii0","apclix0", "apcli0";
+        mtketh-max-gmac = <2>;
+        status = "okay";
 };
 
 &gsw {
-	compatible = "mediatek,ralink-mt7621-gsw";
+	mediatek,mdio = <&mdio>;
+	mediatek,portmap = "llllw";
+	mediatek,mcm;
+	mt7530,direct-phy-access;
+
+	resets = <&rstctrl 2>;
+	reset-names = "mcm";
+
+	port5: port@5 {
+		compatible = "mediatek,mt753x-port";
+		reg = <5>;
+		phy-mode = "rgmii";
+		fixed-link {
+			speed = <1000>;
+			full-duplex;
+		};
+	};
+
+	port6: port@6 {
+		compatible = "mediatek,mt753x-port";
+		reg = <6>;
+		phy-mode = "rgmii";
+		fixed-link {
+			speed = <1000>;
+			full-duplex;
+		};
+	};
+
+	mdio-bus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
 };
+
 
 &state_default {
 	gpio {
@@ -129,6 +174,10 @@
 	compatible = "nvmem-cells";
 	#address-cells = <1>;
 	#size-cells = <1>;
+
+	macaddr_factory_4: macaddr@4 {
+		reg = <0x4 0x6>;
+	};
 
 	macaddr_factory_e000: macaddr@e000 {
 		reg = <0xe000 0x6>;
