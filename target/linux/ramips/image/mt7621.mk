@@ -1240,7 +1240,7 @@ define Device/netgear_r6260
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x0052
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6260
 
@@ -1252,7 +1252,7 @@ define Device/netgear_r6350
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x0052
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6350
 
@@ -1271,7 +1271,7 @@ define Device/netgear_r6700-v2
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x1032
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6700-v2
 
@@ -1283,7 +1283,7 @@ define Device/netgear_r6800
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x0062
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6800
 
@@ -1295,7 +1295,7 @@ define Device/netgear_r6850
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x0052
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6850
 
@@ -1308,7 +1308,7 @@ define Device/netgear_r6900-v2
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x1032
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r6900-v2
 
@@ -1320,7 +1320,7 @@ define Device/netgear_r7200
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x1032
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r7200
 
@@ -1332,7 +1332,7 @@ define Device/netgear_r7450
   SERCOMM_HWVER := A001
   SERCOMM_SWVER := 0x1032
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_r7450
 
@@ -1356,7 +1356,7 @@ define Device/netgear_wac124
   SERCOMM_HWVER := A003
   SERCOMM_SWVER := 0x0402
   IMAGE_SIZE := 40960k
-  DEVICE_PACKAGES += kmod-mt7615e kmod-mt7615-firmware
+  DEVICE_PACKAGES += kmod-mt7615d luci-app-mtwifi
 endef
 TARGET_DEVICES += netgear_wac124
 
@@ -1865,8 +1865,8 @@ define Device/xiaomi_mi-router-3g
   $(Device/xiaomi_nand_separate)
   DEVICE_MODEL := Mi Router 3G
   IMAGE_SIZE := 124416k
-  DEVICE_PACKAGES += kmod-mt7603 kmod-mt76x2 kmod-usb3 \
-	kmod-usb-ledtrig-usbport
+  DEVICE_PACKAGES += kmod-mt7603e kmod-mt76x2e kmod-usb3 \
+	kmod-usb-ledtrig-usbport luci-app-mtwifi
   SUPPORTED_DEVICES += R3G mir3g xiaomi,mir3g
 endef
 TARGET_DEVICES += xiaomi_mi-router-3g
@@ -1897,7 +1897,7 @@ define Device/xiaomi_mi-router-3-pro
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | \
 	check-size
-  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware kmod-usb3 \
+  DEVICE_PACKAGES := kmod-mt7615d luci-app-mtwifi kmod-usb3 \
 	kmod-usb-ledtrig-usbport uboot-envtools
   SUPPORTED_DEVICES += xiaomi,mir3p
 endef

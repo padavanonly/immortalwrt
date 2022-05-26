@@ -16,3 +16,4 @@ static inline void mtk_bmt_detach(struct mtd_info *mtd)
 #endif
 
 #endif
+
