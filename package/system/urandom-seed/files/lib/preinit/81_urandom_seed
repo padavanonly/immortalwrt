@@ -1,0 +1,12 @@
+log_urandom_seed() {
+    echo "urandom-seed: $1" > /dev/kmsg
+}
+
+do_urandom_seed() {
+    [ -c /dev/urandom ] || { log_urandom_seed "Something is wrong with /dev/urandom"; return; }
+    seedrng 2>&1 | while read -r line; do
+        log_urandom_seed "$line"
+    done
+}
+
+boot_hook_add preinit_main do_urandom_seed

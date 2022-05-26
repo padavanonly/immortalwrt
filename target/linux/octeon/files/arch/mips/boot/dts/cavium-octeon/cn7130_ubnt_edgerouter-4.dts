@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include "cn7130_ubnt_edgerouter-e300.dtsi"
+
+/ {
+	compatible = "ubnt,edgerouter-4", "cavium,cn7130";
+	model = "Ubiquiti EdgeRouter 4";
+};
+
+&pip {
+	interface@0 {
+		ethernet@0 {
+			label = "lan3";
+			status = "okay";
+			phy-mode = "sgmii";
+			phy-handle = <&phy4>;
+			nvmem-cells = <&macaddr_eeprom_0>;
+			nvmem-cell-names = "mac-address";
+		};
+	};
+};
+
+&eeprom {
+	compatible = "nvmem-cells";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	macaddr_eeprom_0: macaddr@0 {
+		reg = <0x0 0x6>;
+	};
+};

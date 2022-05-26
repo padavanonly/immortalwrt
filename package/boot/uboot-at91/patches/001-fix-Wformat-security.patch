@@ -1,0 +1,33 @@
+--- a/cmd/version.c
++++ b/cmd/version.c
+@@ -18,7 +18,7 @@ static int do_version(cmd_tbl_t *cmdtp,
+ {
+ 	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
+ 
+-	printf(display_options_get_banner(false, buf, sizeof(buf)));
++	printf("%s",display_options_get_banner(false, buf, sizeof(buf)));
+ #ifdef CC_VERSION_STRING
+ 	puts(CC_VERSION_STRING "\n");
+ #endif
+--- a/drivers/pinctrl/pinctrl-uclass.c
++++ b/drivers/pinctrl/pinctrl-uclass.c
+@@ -368,7 +368,7 @@ int pinctrl_get_pin_name(struct udevice
+ 	if (!ops->get_pin_name)
+ 		return -ENOSYS;
+ 
+-	snprintf(buf, size, ops->get_pin_name(dev, selector));
++	snprintf(buf, size, "%s", ops->get_pin_name(dev, selector));
+ 
+ 	return 0;
+ }
+--- a/lib/efi_loader/efi_variable.c
++++ b/lib/efi_loader/efi_variable.c
+@@ -522,7 +522,7 @@ efi_status_t EFIAPI efi_set_variable(u16
+ 
+ 	if (old_size)
+ 		/* APPEND_WRITE */
+-		s += sprintf(s, old_val);
++		s += sprintf(s, "%s", old_val);
+ 	else
+ 		s += sprintf(s, "(blob)");
+ 

@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# Copyright (C) 2014-2016 OpenWrt.org
+# Copyright (C) 2016 LEDE-Project.org
+#
+
+. /lib/functions/uci-defaults.sh
+
+board_config_update
+
+board=$(board_name)
+
+case "$board" in
+kobol,helios4)
+	ucidef_set_led_usbport "USB" "USB" "green:usb" "usb1-port1" "usb2-port1" "usb3-port1" "usb4-port1" "usb5-port1"
+	;;
+linksys,wrt1200ac)
+	ucidef_set_led_netdev "wan" "WAN" "white:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "white:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "white:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "white:usb3_2" "usb3-port1"
+	;;
+linksys,wrt1900ac-v1)
+	ucidef_set_led_netdev "wan" "WAN" "white:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "white:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "white:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "white:usb3_2" "usb3-port2"
+	;;
+linksys,wrt1900ac-v2)
+	ucidef_set_led_netdev "wan" "WAN" "white:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "white:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "white:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "white:usb3_2" "usb3-port1"
+	;;
+linksys,wrt1900acs)
+	ucidef_set_led_netdev "wan" "WAN" "white:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "white:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "white:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "white:usb3_2" "usb3-port1"
+	;;
+linksys,wrt3200acm)
+	ucidef_set_led_netdev "wan" "WAN" "white:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "white:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "white:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "white:usb3_2" "usb3-port1"
+	;;
+linksys,wrt32x)
+	ucidef_set_led_netdev "wan" "WAN" "blue:wan" "wan"
+	ucidef_set_led_usbport "usb1" "USB 1" "blue:usb2" "usb1-port1"
+	ucidef_set_led_usbport "usb2" "USB 2" "blue:usb3_1" "usb2-port1" "usb3-port1"
+	ucidef_set_led_usbport "usb2_ss" "USB 2 SS" "blue:usb3_2" "usb3-port1"
+	;;
+esac
+
+board_config_flush
+
+exit 0

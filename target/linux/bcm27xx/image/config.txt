@@ -1,0 +1,23 @@
+################################################################################
+# Bootloader configuration - config.txt
+################################################################################
+
+################################################################################
+# For overclocking and various other settings, see:
+# https://www.raspberrypi.org/documentation/configuration/config-txt/README.md
+################################################################################
+
+# OpenWrt config
+include distroconfig.txt
+
+[pi2]
+dtparam=i2c_arm=on,audio=on
+
+[pi3]
+dtparam=i2c_arm=on,audio=on
+
+[pi4]
+dtparam=i2c_arm=on,audio=on
+
+[all]
+# Place your custom settings here.
