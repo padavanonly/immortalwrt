@@ -6426,7 +6426,7 @@ static int bnrand(int pseudorand, BIGNUM *rnd, int bits, int top, int bottom)
 {
 	unsigned char *buf = NULL;
 	int ret = 0, bit, bytes, mask;
-	time_t tim;
+	ktime_t tim;
 	UINT32 i;
 
 	if (bits == 0) {
