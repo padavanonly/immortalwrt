@@ -539,7 +539,7 @@ Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
 +		block_cb = flow_block_cb_lookup(f->block, cb, dev);
 +		if (!block_cb)
 +			return -ENOENT;
-+
++		
 +		if (flow_block_cb_decref(block_cb)) {
 +			flow_block_cb_remove(block_cb, f);
 +			list_del(&block_cb->driver_list);

@@ -577,9 +577,9 @@ Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
 +
 +	mtk_ppe_cache_enable(ppe, true);
 +
-+	val = MTK_PPE_FLOW_CFG_IP4_TCP_FRAG |
-+	      MTK_PPE_FLOW_CFG_IP4_UDP_FRAG |
-+	      MTK_PPE_FLOW_CFG_IP6_3T_ROUTE |
++	 
++	 
++	val = MTK_PPE_FLOW_CFG_IP6_3T_ROUTE |
 +	      MTK_PPE_FLOW_CFG_IP6_5T_ROUTE |
 +	      MTK_PPE_FLOW_CFG_IP6_6RD |
 +	      MTK_PPE_FLOW_CFG_IP4_NAT |
@@ -608,7 +608,7 @@ Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
 +	      FIELD_PREP(MTK_PPE_BIND_LIMIT1_NON_L4, 1);
 +	ppe_w32(ppe, MTK_PPE_BIND_LIMIT1, val);
 +
-+	val = FIELD_PREP(MTK_PPE_BIND_RATE_BIND, 30) |
++	val = FIELD_PREP(MTK_PPE_BIND_RATE_BIND, 1) |
 +	      FIELD_PREP(MTK_PPE_BIND_RATE_PREBIND, 1);
 +	ppe_w32(ppe, MTK_PPE_BIND_RATE, val);
 +
@@ -663,7 +663,7 @@ Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
 +
 +#define MTK_ETH_PPE_BASE		0xc00
 +
-+#define MTK_PPE_ENTRIES_SHIFT		3
++#define MTK_PPE_ENTRIES_SHIFT		4
 +#define MTK_PPE_ENTRIES			(1024 << MTK_PPE_ENTRIES_SHIFT)
 +#define MTK_PPE_HASH_MASK		(MTK_PPE_ENTRIES - 1)
 +
