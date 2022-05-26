@@ -58,7 +58,6 @@ DEFAULT_PACKAGES.tweak:=\
 	luci \
 	luci-app-cpufreq \
 	luci-app-filetransfer \
-	luci-app-turboacc \
 	luci-lib-fs \
 	luci-lib-ipkg
 
