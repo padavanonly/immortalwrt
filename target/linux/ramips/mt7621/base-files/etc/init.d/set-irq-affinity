@@ -11,7 +11,7 @@ start() {
 		return
 	fi
 
-	for irq in $(grep "mt76..e" /proc/interrupts | cut -d: -f1 | sed 's, *,,')
+	for irq in $(grep -E "mt76|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,')
 	do
 		echo "$mask" > "/proc/irq/$irq/smp_affinity"
 		[ $mask = 4 ] && mask=8
@@ -21,7 +21,6 @@ start() {
 	ifconfig ra0 up
 	mtkwifi reload
 	modprobe mtkhnat
-	echo "1" > "/proc/irq/21/smp_affinity"
 	echo "6" > "/sys/class/net/eth0/queues/rx-0/rps_cpus"
 	echo "6" > "/sys/class/net/ra0/queues/rx-0/rps_cpus"
 	echo "6" > "/sys/class/net/rai0/queues/rx-0/rps_cpus"
