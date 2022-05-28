@@ -11,7 +11,7 @@ start() {
 		return
 	fi
 
-	for irq in $(grep -E "mt76|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,')
+	for irq in $(grep -E "mt|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,')
 	do
 		echo "$mask" > "/proc/irq/$irq/smp_affinity"
 		[ $mask = 4 ] && mask=8
