@@ -149,10 +149,10 @@ extern UINT32 DebugSubCategory[DBG_LVL_MAX + 1][32];
 
 #define MTWF_LOG(Category, SubCategory, Level, Fmt)                            \
 	do {                                                                   \
-		if ((0x1 << Category) & (DebugCategory))                       \
-			if ((SubCategory) &                                    \
-			    (DebugSubCategory[Level][Category]))               \
-				MTWF_PRINT Fmt;                                \
+		                       \
+			                                    \
+			    \
+				                                \
 	} while (0)
 
 #else

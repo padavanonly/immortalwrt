@@ -43,7 +43,6 @@ ramips_setup_interfaces()
 	asiarf,ap7621-nv1|\
 	beeline,smartbox-flash|\
 	iptime,a3002mesh|\
-	jcg,q20|\
 	mikrotik,routerboard-m33g|\
 	oraybox,x3a|\
 	renkforce,ws-wn530hp3-a|\
@@ -127,6 +126,10 @@ ramips_setup_interfaces()
 		ucidef_set_interfaces_lan_wan "eth0 ra0 rax0" "eth1"
 		ucidef_add_switch "switch0" \
 			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "6u@eth0" "5u@eth1"
+		;;
+	jcg,q20)
+		ucidef_add_switch "switch0" \
+			"1:lan" "2:lan" "3:lan" "4:lan" "0:wan" "6u@eth0" "5u@eth1"
 		;;
 	netgear,r6220|\
 	netgear,r6260|\
