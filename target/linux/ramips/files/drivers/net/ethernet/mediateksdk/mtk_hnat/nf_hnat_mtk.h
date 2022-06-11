@@ -62,7 +62,7 @@ struct hnat_desc {
 
 #define HNAT_MAGIC_TAG 0x6789
 #define HNAT_INFO_FILLED 0x7
-#define WIFI_INFO_LEN 0
+#define WIFI_INFO_LEN 3
 #define FOE_INFO_LEN (10 + WIFI_INFO_LEN)
 #define IS_SPACE_AVAILABLE_HEAD(skb)                                           \
 	((((skb_headroom(skb) >= FOE_INFO_LEN) ? 1 : 0)))

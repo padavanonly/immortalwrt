@@ -19,7 +19,11 @@ start() {
 	modprobe mt_wifi
 	ifconfig rax0 up
 	ifconfig ra0 up
-	mtkwifi reload
+	ifconfig rai0 up
+	ifconfig apclix0 up
+	ifconfig apcli0 up
+	ifconfig apclii0 up
+	/etc/init.d/apcli.sh start
 	modprobe mtkhnat
 	echo "6" > "/sys/class/net/eth0/queues/rx-0/rps_cpus"
 	echo "6" > "/sys/class/net/ra0/queues/rx-0/rps_cpus"

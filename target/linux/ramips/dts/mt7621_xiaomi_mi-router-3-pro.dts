@@ -42,25 +42,21 @@
 		wan_amber {
 			label = "amber:wan";
 			gpios = <&gpio 14 GPIO_ACTIVE_LOW>;
-			linux,default-trigger = "dsa-0.0:04:1Gbps";
 		};
 
 		lan3_amber {
 			label = "amber:lan3";
 			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;
-			linux,default-trigger = "dsa-0.0:03:1Gbps";
 		};
 
 		lan2_amber {
 			label = "amber:lan2";
 			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
-			linux,default-trigger = "dsa-0.0:02:1Gbps";
 		};
 
 		lan1_amber {
 			label = "amber:lan1";
 			gpios = <&gpio 15 GPIO_ACTIVE_LOW>;
-			linux,default-trigger = "dsa-0.0:01:1Gbps";
 		};
 	};
 

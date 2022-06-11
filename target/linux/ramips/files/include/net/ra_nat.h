@@ -17,7 +17,6 @@
 
 #include <linux/ip.h>
 #include <linux/ipv6.h>
-
 #define hwnat_vlan_tx_tag_present(__skb)     ((__skb)->vlan_tci & VLAN_TAG_PRESENT)
 #define hwnat_vlan_tag_get(__skb)         ((__skb)->vlan_tci & ~VLAN_TAG_PRESENT)
 
