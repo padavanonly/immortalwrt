@@ -86,7 +86,7 @@
 		};
 
 		factory: partition@100000 {
-			label = "Factory";
+			label = "factory";
 			reg = <0x100000 0x80000>;
 			read-only;
 		};

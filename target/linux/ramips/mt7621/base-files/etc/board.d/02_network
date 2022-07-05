@@ -31,7 +31,7 @@ ramips_setup_interfaces()
 	xiaomi,mi-router-cr6606|\
 	xiaomi,mi-router-cr6608|\
 	xiaomi,mi-router-cr6609)
-		ucidef_set_interfaces_lan_wan "eth0 ra0 rai0" "eth1"
+		ucidef_set_interfaces_lan_wan "eth0 rax0 ra0" "eth1"
 		ucidef_add_switch "switch0" \
 			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "6u@eth0" "5u@eth1"
 		;;
@@ -130,6 +130,7 @@ ramips_setup_interfaces()
 	jcg,q20)
 		ucidef_add_switch "switch0" \
 			"1:lan" "2:lan" "3:lan" "4:lan" "0:wan" "6u@eth0" "5u@eth1"
+		ucidef_set_interfaces_lan_wan "eth0 rax0 ra0" "eth1"
 		;;
 	netgear,r6220|\
 	netgear,r6260|\
@@ -155,7 +156,6 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"1:lan:2" "2:lan:1" "4:wan" "6u@eth0" "5u@eth1"
 		;;
-	asus,rt-ac85p|\
 	xiaomi,mi-router-ac2100|\
 	xiaomi,redmi-router-ac2100)
 		ucidef_set_interfaces_lan_wan "eth0 ra0 rai0" "eth1"
@@ -165,6 +165,7 @@ ramips_setup_interfaces()
 	xiaomi,mi-router-cr660x)
 		ucidef_add_switch "switch0" \
 			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "6u@eth0" "5u@eth1"
+		ucidef_set_interfaces_lan_wan "eth0 rax0 ra0" "eth1"
 		;;
 	xwrt,t-cpe1201k-v01)
 		ucidef_add_switch "switch0" \
