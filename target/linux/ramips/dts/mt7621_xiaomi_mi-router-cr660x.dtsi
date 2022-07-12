@@ -113,13 +113,14 @@
 
 		partition@200000 {
 			label = "kernel";
-			reg = <0x200000 0x400000>;
+			reg = <0x200000 0x500000>;
 		};
 
-		partition@600000 {
+		partition@700000 {
 			label = "ubi";
-			reg = <0x600000 0x7980000>;
+			reg = <0x700000 0x7880000>;
 		};
+
 
 		/*
 		 * Leave 512 KiB for the bad block table
