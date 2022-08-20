@@ -831,6 +831,10 @@ sub update {
 		};
 	}
 
+	if ($failed == 0) {
+		system(`sed -i -e 's/"^rausb%d", "^rai%d", "^ra%d", "^wdsi%d", "^wds%d", "^apclii%d", "^apcli%d", "^apcliusb%d", //' feeds/luci/modules/luci-base/luasrc/model/network.lua`);
+	}
+
 	refresh_config();
 
 	return $failed;
