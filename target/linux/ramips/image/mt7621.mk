@@ -722,7 +722,7 @@ define Device/hiwifi_hc5962
 	check-size
   DEVICE_VENDOR := HiWiFi
   DEVICE_MODEL := HC5962
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3
+  DEVICE_PACKAGES := kmod-mt7603e kmod-mt76x2e luci-app-mtwifi kmod-usb3
 endef
 TARGET_DEVICES += hiwifi_hc5962
 
