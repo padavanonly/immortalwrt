@@ -35,8 +35,8 @@ config NET_MEDIATEK_HNAT
 	  
 config ARCH_MT7622_WIFI_HW_NAT
 	tristate "ARCH_MT7622_WIFI_HW_NAT"
-	help
-	  This driver supports ARCH_MT7622_WIFI_HW_NAT
+	bool
+	default n
 	  
 config RA_HW_NAT
 	tristate "RA_HW_NAT"
@@ -47,5 +47,10 @@ config RA_HW_NAT_PPTP_L2TP
 	tristate "RA_HW_NAT_PPTP_L2TP"
 	help
 	  This driver supports RA_HW_NAT_PPTP_L2TP
+	  
+config NET_MEDIATEK_HW_QOS
+	bool "Mediatek HW QoS support"
+	depends on NET_MEDIATEK_HNAT
+	default n
 
 endif #NET_VENDOR_MEDIATEK_SDK
