@@ -54,7 +54,7 @@
  
  #include <pinmux.h>
  
-@@ -105,11 +110,99 @@ static struct rt2880_pmx_group mt7621_pi
+@@ -105,11 +110,98 @@ static struct rt2880_pmx_group mt7621_pi
  	{ 0 }
  };
  
