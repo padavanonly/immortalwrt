@@ -155,6 +155,7 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"1:lan:2" "2:lan:1" "4:wan" "6u@eth0" "5u@eth1"
 		;;
+	asus,rt-ac85p|\
 	xiaomi,mi-router-ac2100|\
 	xiaomi,redmi-router-ac2100)
 		ucidef_set_interfaces_lan_wan "eth0 ra0 rai0" "eth1"

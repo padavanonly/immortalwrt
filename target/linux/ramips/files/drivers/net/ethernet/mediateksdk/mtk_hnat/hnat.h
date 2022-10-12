@@ -16,9 +16,10 @@
 #include <linux/if.h>
 #include <linux/if_ether.h>
 #include <net/netevent.h>
-#include <linux/mod_devicetable.h>
-#include "hnat_mcast.h"
 #include <net/netfilter/nf_hnat.h>
+#include "hnat_mcast.h"
+#include "hnat_sfq.h"
+
 /*--------------------------------------------------------------------------*/
 /* Register Offset*/
 /*--------------------------------------------------------------------------*/
@@ -41,7 +42,6 @@
 #define PPE_BND_AGE_1 0x40
 #define PPE_HASH_SEED 0x44
 #define PPE_DFT_CPORT 0x48
-#define PPE_DFT_CPORT1 0x4C
 #define PPE_MCAST_PPSE 0x84
 #define PPE_MCAST_L_0 0x88
 #define PPE_MCAST_H_0 0x8C
@@ -99,32 +99,16 @@
 #define PPE_MIB_CAH_LINE_RW 0X158
 #define PPE_MIB_CAH_WDATA 0X15C
 #define PPE_MIB_CAH_RDATA 0X160
-#define PPE_SBW_CTRL 0x174
 
 #define GDMA1_FWD_CFG 0x500
 #define GDMA2_FWD_CFG 0x1500
 
-/* QDMA Tx queue configuration */
-#define QTX_CFG(x)			(QDMA_BASE + ((x) * 0x10))
-#define QTX_CFG_HW_RESV_CNT_OFFSET	(8)
-#define QTX_CFG_SW_RESV_CNT_OFFSET	(0)
-
-#define QTX_SCH(x)			(QDMA_BASE + 0x4 + ((x) * 0x10))
-#define QTX_SCH_MIN_RATE_EN		BIT(27)
-#define QTX_SCH_MAX_RATE_EN		BIT(11)
-#define QTX_SCH_MIN_RATE_MAN_OFFSET	(20)
-#define QTX_SCH_MIN_RATE_EXP_OFFSET	(16)
-#define QTX_SCH_MAX_RATE_WGHT_OFFSET	(12)
-#define QTX_SCH_MAX_RATE_MAN_OFFSET	(4)
-#define QTX_SCH_MAX_RATE_EXP_OFFSET	(0)
-
-/* QDMA Tx scheduler configuration */
-#define QDMA_PAGE			(QDMA_BASE + 0x1f0)
-#define QDMA_TX_2SCH_BASE		(QDMA_BASE + 0x214)
-#define QTX_MIB_IF			(QDMA_BASE + 0x2bc)
-#define QDMA_TX_4SCH_BASE(x)		(QDMA_BASE + 0x398 + (((x) >> 1) * 0x4))
-#define QDMA_TX_SCH_WFQ_EN		BIT(15)
-
+#define QTX_CFG(x) (0x1800 + ((x) * 0x10))
+#define QTX_SCH(x) (0x1804 + ((x) * 0x10))
+#define QDMA_PAGE 0x19f0
+#define QDMA_TX_2SCH_BASE 0x1a14
+#define QTX_MIB_IF 0x1abc
+#define QDMA_TX_4SCH_BASE(x) (0x1b98 + (((x) >> 1) * 0x4))
 /*--------------------------------------------------------------------------*/
 /* Register Mask*/
 /*--------------------------------------------------------------------------*/
@@ -142,8 +126,6 @@
 #define SCAN_MODE (0x3 << 16) /* RW */
 #define XMODE (0x3 << 18) /* RW */
 #define TICK_SEL (0x1 << 24) /* RW */
-
-
 /*PPE_CAH_CTRL mask*/
 #define CAH_EN (0x1 << 0) /* RW */
 #define CAH_X_MODE (0x1 << 9) /* RW */
@@ -210,59 +192,6 @@
 /*--------------------------------------------------------------------------*/
 /* Descriptor Structure */
 /*--------------------------------------------------------------------------*/
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-struct hnat_unbind_info_blk {
-	u32 time_stamp : 8;
-	u32 sp : 4;
-	u32 pcnt : 8;
-	u32 ilgf : 1;
-	u32 mc : 1;
-	u32 preb : 1;
-	u32 pkt_type : 5;
-	u32 state : 2;
-	u32 udp : 1;
-	u32 sta : 1;		/* static entry */
-} __packed;
-
-struct hnat_bind_info_blk {
-	u32 time_stamp : 8;
-	u32 sp : 4;
-	u32 mc : 1;
-	u32 ka : 1;		/* keep alive */
-	u32 vlan_layer : 3;
-	u32 psn : 1;		/* egress packet has PPPoE session */
-	u32 vpm : 1;		/* 0:ethertype remark, 1:0x8100(CR default) */
-	u32 ps : 1;		/* packet sampling */
-	u32 cah : 1;		/* cacheable flag */
-	u32 rmt : 1;		/* remove tunnel ip header (6rd/dslite only) */
-	u32 ttl : 1;
-	u32 pkt_type : 5;
-	u32 state : 2;
-	u32 udp : 1;
-	u32 sta : 1;		/* static entry */
-} __packed;
-
-struct hnat_info_blk2 {
-	u32 qid : 7;		/* QID in Qos Port */
-	u32 port_mg : 1;
-	u32 fqos : 1;		/* force to PSE QoS port */
-	u32 dp : 4;		/* force to PSE port x */
-	u32 mcast : 1;		/* multicast this packet to CPU */
-	u32 pcpl : 1;		/* OSBN */
-	u32 mibf : 1;
-	u32 alen : 1;
-	u32 rxid : 2;
-	u32 winfoi : 1;
-	u32 port_ag : 4;
-	u32 dscp : 8;		/* DSCP value */
-} __packed;
-
-struct hnat_winfo {
-	u32 bssid : 6;		/* WiFi Bssidx */
-	u32 wcid : 10;		/* WiFi wtable Idx */
-} __packed;
-
-#else
 struct hnat_unbind_info_blk {
 	u32 time_stamp : 8;
 	u32 pcnt : 16; /* packet count */
@@ -304,13 +233,6 @@ struct hnat_info_blk2 {
 	u32 dscp : 8; /* DSCP value */
 } __packed;
 
-struct hnat_winfo {
-	u32 bssid : 6;		/* WiFi Bssidx */
-	u32 wcid : 8;		/* WiFi wtable Idx */
-	u32 rxid : 2;		/* WiFi Ring idx */
-} __packed;
-#endif
-
 /* info blk2 for WHNAT */
 struct hnat_info_blk2_whnat {
 	u32 qid : 4; /* QID[3:0] in Qos Port */
@@ -330,6 +252,11 @@ struct hnat_info_blk2_whnat {
 	u32 dscp : 8; /* DSCP value */
 } __packed;
 
+struct hnat_winfo {
+	u32 bssid : 6; /* WiFi Bssidx */
+	u32 wcid : 8; /* WiFi wtable Idx */
+	u32 rxid : 2; /* WiFi Ring idx */
+} __packed;
 struct hnat_ipv4_hnapt {
 	union {
 		struct hnat_bind_info_blk bfib1;
@@ -358,19 +285,13 @@ struct hnat_ipv4_hnapt {
 	u16 etype;
 	u32 dmac_hi;
 	union {
-#if !defined(CONFIG_MEDIATEK_NETSYS_V2)
 		struct hnat_winfo winfo;
-#endif
 		u16 vlan2;
 	};
 	u16 dmac_lo;
 	u32 smac_hi;
 	u16 pppoe_id;
 	u16 smac_lo;
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	u16 minfo;
-	struct hnat_winfo winfo;
-#endif
 } __packed;
 
 struct hnat_ipv4_dslite {
@@ -410,23 +331,13 @@ struct hnat_ipv4_dslite {
 	u16 etype;
 	u32 dmac_hi;
 	union {
-#if !defined(CONFIG_MEDIATEK_NETSYS_V2)
 		struct hnat_winfo winfo;
-#endif
 		u16 vlan2;
 	};
 	u16 dmac_lo;
 	u32 smac_hi;
 	u16 pppoe_id;
 	u16 smac_lo;
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	u16 minfo;
-	struct hnat_winfo winfo;
-	u32 new_sip;
-        u32 new_dip;
-        u16 new_dport;
-        u16 new_sport;
-#endif
 } __packed;
 
 struct hnat_ipv6_3t_route {
@@ -444,7 +355,7 @@ struct hnat_ipv6_3t_route {
 	u32 ipv6_dip2;
 	u32 ipv6_dip3;
 	u32 prot : 8;
-	u32 hph : 24; /* hash placeholder */
+	u32 resv : 24;
 
 	u32 resv1;
 	u32 resv2;
@@ -461,19 +372,13 @@ struct hnat_ipv6_3t_route {
 	u16 etype;
 	u32 dmac_hi;
 	union {
-#if !defined(CONFIG_MEDIATEK_NETSYS_V2)
 		struct hnat_winfo winfo;
-#endif
 		u16 vlan2;
 	};
 	u16 dmac_lo;
 	u32 smac_hi;
 	u16 pppoe_id;
 	u16 smac_lo;
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	u16 minfo;
-	struct hnat_winfo winfo;
-#endif
 } __packed;
 
 struct hnat_ipv6_5t_route {
@@ -509,19 +414,13 @@ struct hnat_ipv6_5t_route {
 	u16 etype;
 	u32 dmac_hi;
 	union {
-#if !defined(CONFIG_MEDIATEK_NETSYS_V2)
 		struct hnat_winfo winfo;
-#endif
 		u16 vlan2;
 	};
 	u16 dmac_lo;
 	u32 smac_hi;
 	u16 pppoe_id;
 	u16 smac_lo;
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	u16 minfo;
-	struct hnat_winfo winfo;
-#endif
 } __packed;
 
 struct hnat_ipv6_6rd {
@@ -562,23 +461,13 @@ struct hnat_ipv6_6rd {
 	u16 etype;
 	u32 dmac_hi;
 	union {
-#if !defined(CONFIG_MEDIATEK_NETSYS_V2)
 		struct hnat_winfo winfo;
-#endif
 		u16 vlan2;
 	};
 	u16 dmac_lo;
 	u32 smac_hi;
 	u16 pppoe_id;
 	u16 smac_lo;
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	u16 minfo;
-	struct hnat_winfo winfo;
-	u32 resv3;
-        u32 resv4;
-        u16 new_dport;
-        u16 new_sport;
-#endif
 } __packed;
 
 struct foe_entry {
@@ -597,20 +486,11 @@ struct foe_entry {
  * DEF_ETRY_NUM_CFG need to be modified.
  */
 #define DEF_ETRY_NUM		16384
-/* feasible values : 32768, 16384, 8192, 4096, 2048, 1024 */
+/* feasible values : 16384, 8192, 4096, 2048, 1024 */
 #define DEF_ETRY_NUM_CFG	TABLE_16K
-/* corresponding values : TABLE_32K, TABLE_16K, TABLE_8K, TABLE_4K, TABLE_2K,
- * TABLE_1K
- */
+/* corresponding values : TABLE_16K, TABLE_8K, TABLE_4K, TABLE_2K, TABLE_1K */
 #define MAX_EXT_DEVS		(0x3fU)
 #define MAX_IF_NUM		64
-
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-#define MAX_PPE_NUM		2
-#else
-#define MAX_PPE_NUM		1
-#endif
-#define CFG_PPE_NUM		(hnat_priv->ppe_num)
 
 struct mib_entry {
 	u32 byt_cnt_l;
@@ -630,7 +510,6 @@ enum mtk_hnat_version {
 	MTK_HNAT_V1 = 1, /* version 1: mt7621, mt7623 */
 	MTK_HNAT_V2, /* version 2: mt7622 */
 	MTK_HNAT_V3, /* version 3: mt7629 */
-	MTK_HNAT_V4, /* version 4: mt7986 */
 };
 
 struct mtk_hnat_data {
@@ -638,23 +517,26 @@ struct mtk_hnat_data {
 	bool whnat;
 	bool per_flow_accounting;
 	bool mcast;
+	bool sfq;
 	enum mtk_hnat_version version;
 };
 
 struct mtk_hnat {
 	struct device *dev;
 	void __iomem *fe_base;
-	void __iomem *ppe_base[MAX_PPE_NUM];
-	struct foe_entry *foe_table_cpu[MAX_PPE_NUM];
-	dma_addr_t foe_table_dev[MAX_PPE_NUM];
+	void __iomem *ppe_base;
+	struct foe_entry *foe_table_cpu;
+	dma_addr_t foe_table_dev;
+	struct mtk_sfq_table *sfq_tbl_cpu[MTK_VQG_NUM];
+	dma_addr_t sfq_tbl_dev[MTK_VQG_NUM];
 	u8 enable;
 	u8 enable1;
 	struct dentry *root;
-	struct debugfs_regset32 *regset[MAX_PPE_NUM];
+	struct debugfs_regset32 *regset;
 
-	struct mib_entry *foe_mib_cpu[MAX_PPE_NUM];
-	dma_addr_t foe_mib_dev[MAX_PPE_NUM];
-	struct hnat_accounting *acct[MAX_PPE_NUM];
+	struct mib_entry *foe_mib_cpu;
+	dma_addr_t foe_mib_dev;
+	struct hnat_accounting *acct;
 	const struct mtk_hnat_data *data;
 
 	/*devices we plays for*/
@@ -666,20 +548,18 @@ struct mtk_hnat {
 
 	struct reset_control *rstc;
 
-	u8 ppe_num;
 	u8 gmac_num;
 	u8 wan_dsa_port;
 	struct ppe_mcast_table *pmcast;
 
 	u32 foe_etry_num;
-	u32 etry_num_cfg;
 	struct net_device *g_ppdev;
-	struct net_device *g_wandev;
 	struct net_device *wifi_hook_if[MAX_IF_NUM];
 	struct extdev_entry *ext_if[MAX_EXT_DEVS];
 	struct timer_list hnat_sma_build_entry_timer;
 	struct timer_list hnat_reset_timestamp_timer;
 	struct timer_list hnat_mcast_check_timer;
+
 	bool nf_stat_en;
 };
 
@@ -702,13 +582,6 @@ enum FoeIpAct {
 	IPV6_3T_ROUTE = 4,
 	IPV6_5T_ROUTE = 5,
 	IPV6_6RD = 7,
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-	IPV4_MAP_T = 8,
-	IPV4_MAP_E = 9,
-#else
-	IPV4_MAP_T = 6,
-	IPV4_MAP_E = 6,
-#endif
 };
 
 /*--------------------------------------------------------------------------*/
@@ -726,7 +599,6 @@ enum FoeIpAct {
 #define TABLE_4K 2
 #define TABLE_8K 3
 #define TABLE_16K 4
-#define TABLE_32K 5
 #define SMA_DROP 0 /* Drop the packet */
 #define SMA_DROP2 1 /* Drop the packet */
 #define SMA_ONLY_FWD_CPU 2 /* Only Forward to CPU */
@@ -740,7 +612,7 @@ enum FoeIpAct {
 #define BIT_FUC_FOE BIT(2)
 #define BIT_FMC_FOE BIT(1)
 #define BIT_FBC_FOE BIT(0)
-#define BIT_TCP_IP4F_NAT_EN BIT(6) 
+#define BIT_TCP_IP4F_NAT_EN BIT(6)
 #define BIT_UDP_IP4F_NAT_EN BIT(7) /*Enable IPv4 fragment + UDP packet NAT*/
 #define BIT_IPV6_3T_ROUTE_EN BIT(8)
 #define BIT_IPV6_5T_ROUTE_EN BIT(9)
@@ -748,18 +620,17 @@ enum FoeIpAct {
 #define BIT_IPV4_NAT_EN BIT(12)
 #define BIT_IPV4_NAPT_EN BIT(13)
 #define BIT_IPV4_DSL_EN BIT(14)
-#define BIT_MIB_BUSY BIT(16)
 #define BIT_IPV4_NAT_FRAG_EN BIT(17)
 #define BIT_IPV4_HASH_GREK BIT(19)
 #define BIT_IPV6_HASH_GREK BIT(20)
-#define BIT_IPV4_MAPE_EN BIT(21)
-#define BIT_IPV4_MAPT_EN BIT(22)
+
+#define BIT_MIB_BUSY BIT(16)
 
 /*GDMA_FWD_CFG value*/
-#define BITS_GDM_UFRC_P_PPE (NR_PPE0_PORT << 12)
-#define BITS_GDM_BFRC_P_PPE (NR_PPE0_PORT << 8)
-#define BITS_GDM_MFRC_P_PPE (NR_PPE0_PORT << 4)
-#define BITS_GDM_OFRC_P_PPE (NR_PPE0_PORT << 0)
+#define BITS_GDM_UFRC_P_PPE (NR_PPE_PORT << 12)
+#define BITS_GDM_BFRC_P_PPE (NR_PPE_PORT << 8)
+#define BITS_GDM_MFRC_P_PPE (NR_PPE_PORT << 4)
+#define BITS_GDM_OFRC_P_PPE (NR_PPE_PORT << 0)
 #define BITS_GDM_ALL_FRC_P_PPE                                              \
 	(BITS_GDM_UFRC_P_PPE | BITS_GDM_BFRC_P_PPE | BITS_GDM_MFRC_P_PPE |  \
 	 BITS_GDM_OFRC_P_PPE)
@@ -805,15 +676,11 @@ enum FoeIpAct {
 #define FROM_GE_PPD(skb) (skb_hnat_iface(skb) == FOE_MAGIC_GE_PPD)
 #define FROM_GE_VIRTUAL(skb) (skb_hnat_iface(skb) == FOE_MAGIC_GE_VIRTUAL)
 #define FROM_EXT(skb) (skb_hnat_iface(skb) == FOE_MAGIC_EXT)
-#define FROM_WED(skb) ((skb_hnat_iface(skb) == FOE_MAGIC_WED0) ||		\
-		       (skb_hnat_iface(skb) == FOE_MAGIC_WED1))
 #define FOE_MAGIC_GE_LAN 0x1
 #define FOE_MAGIC_GE_WAN 0x2
 #define FOE_MAGIC_EXT 0x3
 #define FOE_MAGIC_GE_VIRTUAL 0x4
 #define FOE_MAGIC_GE_PPD 0x5
-#define FOE_MAGIC_WED0 0x78
-#define FOE_MAGIC_WED1 0x79
 #define FOE_INVALID 0xf
 #define index6b(i) (0x3fU - i)
 
@@ -827,25 +694,17 @@ enum FoeIpAct {
 #define NR_PDMA_PORT 0
 #define NR_GMAC1_PORT 1
 #define NR_GMAC2_PORT 2
-#if defined(CONFIG_MEDIATEK_NETSYS_V2)
-#define NR_WHNAT_WDMA_PORT EINVAL
-#define NR_PPE0_PORT 3
-#define NR_PPE1_PORT 4
-#else
 #define NR_WHNAT_WDMA_PORT 3
-#define NR_PPE0_PORT 4
-#endif
+#define NR_PPE_PORT 4
 #define NR_QDMA_PORT 5
 #define NR_DISCARD 7
-#define NR_WDMA0_PORT 8
-#define NR_WDMA1_PORT 9
 #define LAN_DEV_NAME hnat_priv->lan
 #define IS_WAN(dev)                                                            \
 	(!strncmp((dev)->name, hnat_priv->wan, strlen(hnat_priv->wan)))
 #define IS_LAN(dev) (!strncmp(dev->name, LAN_DEV_NAME, strlen(LAN_DEV_NAME)))
 #define IS_BR(dev) (!strncmp(dev->name, "br", 2))
-#define IS_WHNAT(dev)								\
-	((hnat_priv->data->whnat &&						\
+#define IS_WHNAT(dev)							       \
+	((hnat_priv->data->version == MTK_HNAT_V2 &&			       \
 	 (get_wifi_hook_if_index_from_dev(dev) != 0)) ? 1 : 0)
 #define IS_EXT(dev) ((get_index_from_dev(dev) != 0) ? 1 : 0)
 #define IS_PPD(dev) (!strcmp(dev->name, hnat_priv->ppd))
@@ -853,19 +712,14 @@ enum FoeIpAct {
 #define IS_IPV4_HNAT(x) (((x)->bfib1.pkt_type == IPV4_HNAT) ? 1 : 0)
 #define IS_IPV4_GRP(x) (IS_IPV4_HNAPT(x) | IS_IPV4_HNAT(x))
 #define IS_IPV4_DSLITE(x) (((x)->bfib1.pkt_type == IPV4_DSLITE) ? 1 : 0)
-#define IS_IPV4_MAPE(x) (((x)->bfib1.pkt_type == IPV4_MAP_E) ? 1 : 0)
-#define IS_IPV4_MAPT(x) (((x)->bfib1.pkt_type == IPV4_MAP_T) ? 1 : 0)
 #define IS_IPV6_3T_ROUTE(x) (((x)->bfib1.pkt_type == IPV6_3T_ROUTE) ? 1 : 0)
 #define IS_IPV6_5T_ROUTE(x) (((x)->bfib1.pkt_type == IPV6_5T_ROUTE) ? 1 : 0)
 #define IS_IPV6_6RD(x) (((x)->bfib1.pkt_type == IPV6_6RD) ? 1 : 0)
 #define IS_IPV6_GRP(x)                                                         \
 	(IS_IPV6_3T_ROUTE(x) | IS_IPV6_5T_ROUTE(x) | IS_IPV6_6RD(x) |          \
-	 IS_IPV4_DSLITE(x) | IS_IPV4_MAPE(x) | IS_IPV4_MAPT(x))
+	 IS_IPV4_DSLITE(x))
 #define IS_BOND_MODE (!strncmp(LAN_DEV_NAME, "bond", 4))
 #define IS_GMAC1_MODE ((hnat_priv->gmac_num == 1) ? 1 : 0)
-#define IS_HQOS_MODE (qos_toggle == 1)
-#define IS_PPPQ_MODE (qos_toggle == 2)		/* Per Port Per Queue */
-#define MAX_PPPQ_PORT_NUM	6
 
 #define es(entry) (entry_state[entry->bfib1.state])
 #define ei(entry, end) (hnat_priv->foe_etry_num - (int)(end - entry))
@@ -903,10 +757,20 @@ enum FoeIpAct {
 #define NEXTHDR_IPIP 4
 #endif
 
-extern const struct of_device_id of_hnat_match[];
+
 extern struct mtk_hnat *hnat_priv;
 
-
+#if defined(CONFIG_NET_DSA_MT7530)
+static inline bool hnat_dsa_is_enable(struct mtk_hnat *priv)
+{
+	return (priv->wan_dsa_port != NONE_DSA_PORT);
+}
+#else
+static inline bool hnat_dsa_is_enable(struct mtk_hnat *priv)
+{
+	return false;
+}
+#endif
 
 void hnat_deinit_debugfs(struct mtk_hnat *h);
 int hnat_init_debugfs(struct mtk_hnat *h);
@@ -919,7 +783,6 @@ extern int dbg_cpu_reason;
 extern int debug_level;
 extern int hook_toggle;
 extern int mape_toggle;
-extern int qos_toggle;
 
 int ext_if_add(struct extdev_entry *ext_entry);
 int ext_if_del(struct extdev_entry *ext_entry);
@@ -937,15 +800,10 @@ uint32_t hnat_cpu_reason_cnt(struct sk_buff *skb);
 int hnat_enable_hook(void);
 int hnat_disable_hook(void);
 void hnat_cache_ebl(int enable);
-void hnat_qos_shaper_ebl(u32 id, u32 enable);
 void set_gmac_ppe_fwd(int gmac_no, int enable);
-int entry_detail(u32 ppe_id, int index);
-int entry_delete_by_mac(u8 *mac);
-int entry_delete(u32 ppe_id, int index);
-int hnat_warm_init(void);
-
-struct hnat_accounting *hnat_get_count(struct mtk_hnat *h, u32 ppe_id,
-				       u32 index, struct hnat_accounting *diff);
+int entry_delete(int index);
+struct hnat_accounting *hnat_get_count(struct mtk_hnat *h, u32 index,
+				       struct hnat_accounting *diff);
 
 static inline u16 foe_timestamp(struct mtk_hnat *h)
 {

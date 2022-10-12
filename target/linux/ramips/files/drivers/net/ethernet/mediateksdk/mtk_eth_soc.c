@@ -1179,6 +1179,7 @@ static int mtk_tx_map(struct sk_buff *skb, struct net_device *dev,
 			txd_pdma->txd2 |= TX_DMA_LS1;
 	}
 
+	
 
 	ring->next_free = mtk_qdma_phys_to_virt(ring, txd->txd2);
 	atomic_sub(n_desc, &ring->free_count);
@@ -1643,6 +1644,7 @@ static int mtk_poll_tx(struct mtk_eth *eth, int budget)
 	for (i = 0; i < MTK_MAC_COUNT; i++) {
 		if (!eth->netdev[i] || !done[i])
 			continue;
+	
 		total += done[i];
 	}
 
@@ -2559,15 +2561,16 @@ static int mtk_start_dma(struct mtk_eth *eth)
 {
 	u32 rx_2b_offset = (NET_IP_ALIGN == 2) ? MTK_RX_2B_OFFSET : 0;
 	int val, err;
+
 	static int dma_init_flag = 0; 
-	if(dma_init_flag == 0){
+ 	if(dma_init_flag == 0){
 	err = mtk_dma_init(eth);
 	if (err) {
 		mtk_dma_free(eth);
 		return err;
 	}
 	dma_init_flag = 1;
-	}
+ 	}
 
 	if (MTK_HAS_CAPS(eth->soc->caps, MTK_QDMA)) {
 		val = mtk_r32(eth, MTK_QDMA_GLO_CFG);
@@ -2582,7 +2585,7 @@ static int mtk_start_dma(struct mtk_eth *eth)
 				MTK_RX_2B_OFFSET, MTK_QDMA_GLO_CFG);
 		else
 			mtk_w32(eth,
-				val  | MTK_TX_DMA_EN |
+				val | MTK_TX_DMA_EN |
 				MTK_DMA_SIZE_32DWORDS | MTK_NDP_CO_PRO |
 				MTK_RX_DMA_EN | MTK_RX_2B_OFFSET |
 				MTK_RX_BT_32DWORDS,
@@ -2745,7 +2748,7 @@ static int mtk_stop(struct net_device *dev)
 		mtk_stop_dma(eth, MTK_QDMA_GLO_CFG);
 	mtk_stop_dma(eth, MTK_PDMA_GLO_CFG);
 
-	
+
 
 	return 0;
 }

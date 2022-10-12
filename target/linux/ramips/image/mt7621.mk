@@ -216,7 +216,7 @@ define Device/asus_rt-ac85p
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | \
 	check-size
-  DEVICE_PACKAGES := kmod-usb3 kmod-mt7615e kmod-mt7615-firmware uboot-envtools
+  DEVICE_PACKAGES :=  kmod-mt7615d kmod-usb3 luci-app-mtwifi uboot-envtools
 endef
 TARGET_DEVICES += asus_rt-ac85p
 
@@ -722,7 +722,7 @@ define Device/hiwifi_hc5962
 	check-size
   DEVICE_VENDOR := HiWiFi
   DEVICE_MODEL := HC5962
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3
+  DEVICE_PACKAGES := kmod-mt7603e kmod-mt76x2e luci-app-mtwifi kmod-usb3
 endef
 TARGET_DEVICES += hiwifi_hc5962
 
@@ -1895,8 +1895,9 @@ define Device/xiaomi_mi-router-3-pro
   DEVICE_MODEL := Mi Router 3 Pro
   IMAGES += factory.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
-  IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | \
-	check-size
+  IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | \
+			     append-kernel | pad-to $$(KERNEL_SIZE) | \
+			     append-ubi | check-size
   DEVICE_PACKAGES := kmod-mt7615d luci-app-mtwifi kmod-usb3 \
 	kmod-usb-ledtrig-usbport uboot-envtools
   SUPPORTED_DEVICES += xiaomi,mir3p
