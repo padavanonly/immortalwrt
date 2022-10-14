@@ -1364,8 +1364,7 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 			gmac = (IS_GMAC1_MODE) ? NR_GMAC1_PORT : NR_GMAC2_PORT;
 		}
 	} else if (IS_EXT(dev) && (FROM_GE_PPD(skb) || FROM_GE_LAN(skb) ||
-		   FROM_GE_WAN(skb) || FROM_GE_VIRTUAL(skb))) {
-		if (!hnat_priv->data->whnat && IS_GMAC1_MODE) {
+		FROM_GE_WAN(skb) || FROM_GE_VIRTUAL(skb) || FROM_EXT(skb))) {
 			entry.bfib1.vpm = 1;
 			entry.bfib1.vlan_layer = 1;
 
