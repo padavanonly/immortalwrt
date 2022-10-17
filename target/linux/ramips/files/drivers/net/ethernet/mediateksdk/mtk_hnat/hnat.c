@@ -199,7 +199,7 @@ static int hnat_start(void)
 
 	/* enable FOE */
 	cr_set_bits(hnat_priv->ppe_base + PPE_FLOW_CFG,
-		    BIT_TCP_IP4F_NAT_EN  | BIT_UDP_IP4F_NAT_EN | BIT_IPV4_NAT_EN | BIT_IPV4_NAPT_EN |
+		    BIT_TCP_IP4F_NAT_EN  | BIT_IPV4_NAT_EN | BIT_IPV4_NAPT_EN |
 		    BIT_IPV4_NAT_FRAG_EN | BIT_IPV4_HASH_GREK |
 		    BIT_IPV4_DSL_EN | BIT_IPV6_6RD_EN |
 		    BIT_IPV6_3T_ROUTE_EN | BIT_IPV6_5T_ROUTE_EN);
