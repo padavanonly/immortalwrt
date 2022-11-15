@@ -16,6 +16,10 @@ start() {
 		[ $mask = 4 ] && mask=8
 	done
 
+	for iface in $(ls /sys/class/net); do
+		echo 6 > /sys/class/net/$iface/queues/rx-0/rps_cpus
+	done
+
 	modprobe mt_wifi
 	ifconfig rax0 up
 	ifconfig ra0 up
@@ -25,16 +29,4 @@ start() {
 	ifconfig apclii0 up
 	/etc/init.d/apcli.sh start
 	modprobe mtkhnat
-
-	for eth in /sys/class/net/eth[0-9]*; do
-		echo 6 > $eth/queues/rx-0/rps_cpus
-	done
-
-	echo "6" > "/sys/class/net/ra0/queues/rx-0/rps_cpus"
- 	echo "6" > "/sys/class/net/rai0/queues/rx-0/rps_cpus"
- 	echo "6" > "/sys/class/net/rax0/queues/rx-0/rps_cpus"
- 	echo "6" > "/sys/class/net/apcli0/queues/rx-0/rps_cpus"
- 	echo "6" > "/sys/class/net/apclix0/queues/rx-0/rps_cpus"
- 	echo "6" > "/sys/class/net/apclii0/queues/rx-0/rps_cpus"
-	
 }
