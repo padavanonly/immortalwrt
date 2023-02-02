@@ -733,17 +733,17 @@ config MTK_MU_RA_SUPPORT
 config MTK_DOT11R_FT_SUPPORT
 	bool "802.11r Fast BSS Transition"
 	depends on MTK_MT_AP_SUPPORT
-	default n
+	default y
 
 config MTK_DOT11K_RRM_SUPPORT
 	bool "802.11k Radio Resource Management"
 	depends on MTK_MT_AP_SUPPORT
-	default n
+	default y
 
 config MTK_INTERWORKING
         bool "802.11u Interworking"
         depends on MTK_MT_AP_SUPPORT
-        default n
+        default y
 
 config MTK_MAP_SUPPORT
 	bool "Multi-AP Support"
@@ -941,7 +941,7 @@ config MTK_AIR_MONITOR
 config MTK_WNM_SUPPORT
         bool "802.11v WNM Support"
         depends on MTK_MT_AP_SUPPORT
-        default n
+        default y
 
 config MTK_WIFI_MSI_SUPPORT
         bool "MSI support"
