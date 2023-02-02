@@ -35,7 +35,7 @@
 #define MTK_SGMII_EFUSE			0x11D008C8
 #define MTK_WED_RTQM_GLO_CFG		0x15010B00
 
-#if defined(CONFIG_MEDIATEK_NETSYS_V2) || defined(CONFIG_MEDIATEK_NETSYS_V3)
+#if defined(CONFIG_MEDIATEK_NETSYS_V2)
 #define MTK_PSE_IQ_STA(x)		(0x180 + (x) * 0x4)
 #define MTK_PSE_OQ_STA(x)		(0x1A0 + (x) * 0x4)
 #else
@@ -53,11 +53,13 @@
 
 #define PROCREG_ESW_CNT			"esw_cnt"
 #define PROCREG_TXRING			"tx_ring"
+#define PROCREG_HWTXRING		"hwtx_ring"
 #define PROCREG_RXRING			"rx_ring"
 #define PROCREG_DIR			"mtketh"
 #define PROCREG_DBG_REGS		"dbg_regs"
 #define PROCREG_HW_LRO_STATS		"hw_lro_stats"
 #define PROCREG_HW_LRO_AUTO_TLB		"hw_lro_auto_tlb"
+#define PROCREG_RESET_EVENT		"reset_event"
 
 /* HW LRO flush reason */
 #define MTK_HW_LRO_AGG_FLUSH		(1)
@@ -265,12 +267,11 @@ static inline bool mt7530_exist(struct mtk_eth *eth)
 }
 #endif
 
-extern u32 _mtk_mdio_read(struct mtk_eth *eth, u16 phy_addr, u16 phy_reg);
-extern u32 _mtk_mdio_write(struct mtk_eth *eth, u16 phy_addr,
-		    u16 phy_register, u16 write_data);
+extern u32 _mtk_mdio_read(struct mtk_eth *eth, int phy_addr, int phy_reg);
+extern u32 _mtk_mdio_write(struct mtk_eth *eth, int phy_addr,
+		    int phy_reg, u16 write_data);
 
-extern u32 mtk_cl45_ind_read(struct mtk_eth *eth, u16 port, u16 devad, u16 reg, u16 *data);
-extern u32 mtk_cl45_ind_write(struct mtk_eth *eth, u16 port, u16 devad, u16 reg, u16 data);
+extern atomic_t force;
 
 int debug_proc_init(struct mtk_eth *eth);
 void debug_proc_exit(void);

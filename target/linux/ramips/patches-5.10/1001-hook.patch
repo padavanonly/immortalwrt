@@ -276,50 +276,45 @@
  };
  
  #define IPXIPX_FEATURES (NETIF_F_SG |		\
- 
---- a/net/netfilter/nf_conntrack_proto_tcp.c	2022-05-20 22:09:45.933778000 +0800
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c	2022-05-22 11:26:50.034077741 +0800
-@@ -15,9 +15,9 @@
- #include <linux/ipv6.h>
- #include <net/ip6_checksum.h>
- #include <asm/unaligned.h>
+		
+--- a/include/linux/mdio.h	2022-03-28 15:57:11.000000000 +0800
++++ b/include/linux/mdio.h	2022-12-27 16:18:35.806004570 +0800
+@@ -5,7 +5,7 @@
+  */
+ #ifndef __LINUX_MDIO_H__
+ #define __LINUX_MDIO_H__
 -
-+#include <linux/inetdevice.h>
- #include <net/tcp.h>
--
-+#include <net/ip.h>
- #include <linux/netfilter.h>
- #include <linux/netfilter_ipv4.h>
- #include <linux/netfilter_ipv6.h>
-@@ -50,7 +50,10 @@
++#include <linux/bitfield.h>
+ #include <uapi/linux/mdio.h>
+ #include <linux/mod_devicetable.h>
  
-   /* FIXME: Examine ipfilter's timeouts and conntrack transitions more
-      closely.  They're more complex. --RR */
--
-+#ifndef IPV4_DEVCONF_DFLT
-+	#define IPV4_DEVCONF_DFLT(net, attr) \
-+	IPV4_DEVCONF((*net->ipv4.devconf_dflt), attr)
-+#endif
- static const char *const tcp_conntrack_names[] = {
- 	"NONE",
- 	"SYN_SENT",
-@@ -479,6 +482,18 @@
- 	s32 receiver_offset;
- 	bool res, in_recv_win;
+@@ -14,8 +14,10 @@
+  */
+ #define MII_ADDR_C45		(1<<30)
+ #define MII_DEVADDR_C45_SHIFT	16
++#define MII_DEVADDR_C45_MASK	GENMASK(20, 16)
+ #define MII_REGADDR_C45_MASK	GENMASK(15, 0)
  
-+	if (net) {
-+               if ((net->ipv4.devconf_all && net->ipv4.devconf_dflt && net->ipv6.devconf_all) &&
-+                   net->ipv6.devconf_dflt) {
-+                       if ((IPV4_DEVCONF_DFLT(net, FORWARDING) ||
-+                            IPV4_DEVCONF_ALL(net, FORWARDING)) ||
-+                            (net->ipv6.devconf_all->forwarding ||
-+                             net->ipv6.devconf_dflt->forwarding)) {
-+                               return true;
-+                       }
-+               }
-+       }
 +
- 	if (nf_ct_tcp_no_window_check)
- 		return true;
+ struct gpio_desc;
+ struct mii_bus;
+ struct reset_control;
+@@ -342,6 +344,16 @@
+ 	return MII_ADDR_C45 | devad << MII_DEVADDR_C45_SHIFT | regnum;
+ }
+ 
++static inline u16 mdiobus_c45_regad(u32 regnum)
++{
++	return FIELD_GET(MII_REGADDR_C45_MASK, regnum);
++}
++
++static inline u16 mdiobus_c45_devad(u32 regnum)
++{
++	return FIELD_GET(MII_DEVADDR_C45_MASK, regnum);
++}
++
+ static inline int __mdiobus_c45_read(struct mii_bus *bus, int prtad, int devad,
+ 				     u16 regnum)
+ {
 
 

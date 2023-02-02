@@ -12,12 +12,12 @@ start() {
 	fi
 
 	for irq in $(grep -E "mt|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,'); do
-		echo "$mask" > "/proc/irq/$irq/smp_affinity"
-		[ $mask = 4 ] && mask=8
+		echo "8" > "/proc/irq/$irq/smp_affinity"
+		
 	done
 
 	for iface in $(ls /sys/class/net); do
-		echo 6 > /sys/class/net/$iface/queues/rx-0/rps_cpus
+   [ -e "/sys/class/net/$iface/queues/rx-0/rps_cpus" ] && echo 6 > /sys/class/net/$iface/queues/rx-0/rps_cpus
 	done
 
 	modprobe mt_wifi

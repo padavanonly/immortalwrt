@@ -1,64 +1,24 @@
-/******************************************************************************
+/* SPDX-License-Identifier: GPL-2.0
  *
- * This file is provided under a dual license.  When you use or
- * distribute this software, you may choose to be licensed under
- * version 2 of the GNU General Public License ("GPLv2 License")
- * or BSD License.
- *
- * GPLv2 License
- *
- * Copyright(C) 2017 MediaTek Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of version 2 of the GNU General Public License as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
- *
- * BSD LICENSE
- *
- * Copyright(C) 2017 MediaTek Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *  * Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *****************************************************************************/
+ * Copyright (c) 2019 MediaTek Inc.
+ * Author: Harry Huang <harry.huang@mediatek.com>
+ */
+
 #ifndef _RA_NAT_WANTED
 #define _RA_NAT_WANTED
 
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 
+
+#ifndef NEXTHDR_IPIP
+#define NEXTHDR_IPIP 4
+#endif
+
 #define hwnat_vlan_tx_tag_present(__skb)     ((__skb)->vlan_tci & VLAN_TAG_PRESENT)
 #define hwnat_vlan_tag_get(__skb)         ((__skb)->vlan_tci & ~VLAN_TAG_PRESENT)
 
-#if defined(CONFIG_RA_NAT_HW)
+#if defined(CONFIG_HW_NAT)
 extern void hwnat_magic_tag_set_zero(struct sk_buff *skb);
 extern void hwnat_check_magic_tag(struct sk_buff *skb);
 extern void hwnat_set_headroom_zero(struct sk_buff *skb);
@@ -142,144 +102,298 @@ enum foe_cpu_reason {
 };
 
 #define MAX_IF_NUM 64
+
+#if defined(CONFIG_MEDIATEK_NETSYS_V3)
+struct dmad_rx_descinfo4 {
+	uint32_t foe_entry_num:15;
+	uint32_t rsv0:3;
+	uint32_t CRSN:5;
+	uint32_t rsv1:3;
+	uint32_t SPORT:4;
+	uint32_t ppe:1;
+	uint32_t ALG:1;
+	uint32_t IF:8;
+	uint32_t WDMAID:2;
+	uint32_t RXID:2;
+	uint32_t WCID:16;
+	uint32_t BSSID:8;
+	uint32_t USR_INFO:16;
+	uint32_t TID:4;
+	uint32_t IS_FIXEDRATE:1;
+	uint32_t IS_PRIOR:1;
+	uint32_t IS_SP:1;
+	uint32_t HF:1;
+	uint32_t AMSDU:1;
+	uint16_t minfo:1;
+	uint16_t ntype:3;
+	uint16_t chid:8;
+	uint16_t rsv2:7;
+	u16 MAGIC_TAG_PROTECT;
+} __packed;
+#else
+struct dmad_rx_descinfo4 {
+	uint32_t foe_entry_num:15;
+	uint32_t rsv0:3;
+	uint32_t CRSN:5;
+	uint32_t rsv1:3;
+	uint32_t SPORT:4;
+	uint32_t ppe:1;
+	uint32_t ALG:1;
+	uint32_t IF:8;
+	uint32_t WDMAID:2;
+	uint32_t RXID:2;
+	uint32_t WCID:10;
+	uint32_t BSSID:6;
+	uint32_t rsv3:4;
+	uint16_t minfo:1;
+	uint16_t ntype:3;
+	uint16_t chid:8;
+	uint16_t rsv4:4;
+	u16 MAGIC_TAG_PROTECT;
+} __packed;
+#endif
+
 struct pdma_rx_desc_info4 {
 	u16 MAGIC_TAG_PROTECT;
 	uint32_t foe_entry_num:14;
 	uint32_t CRSN:5;
-	uint32_t SPORT:3;
-#if defined(CONFIG_MACH_LEOPARD)
-	uint32_t foe_entry_num_32:1;
-#else
-	uint32_t rsv:1;
-#endif
+	uint32_t SPORT:4;
+	uint32_t rsv:6;
+	uint32_t foe_entry_num_1:1;
+	uint32_t ppe:1;
 	uint32_t ALG:1;
-	uint16_t IF:8;
-	u8 WDMAID;
-	uint16_t RXID:2;
-	uint16_t WCID:8;
-	uint16_t BSSID:6;
+	uint32_t IF:8;
+	uint32_t WDMAID:2;
+	uint32_t RXID:2;
+	uint32_t WCID:10;
+	uint32_t BSSID:6;
+	uint32_t rsv2:4;
+	uint16_t minfo:1;
+	uint16_t ntype:3;
+	uint16_t chid:8;
+	uint16_t rsv3:4;
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 	u16 SOURCE;
 	u16 DEST;
 #endif
 } __packed;
 
+#if defined(CONFIG_MEDIATEK_NETSYS_V2)
+struct head_rx_descinfo4 {
+	uint32_t foe_entry_num:14;
+	uint32_t CRSN:5;
+	uint32_t SPORT:4;
+	uint32_t rsv:6;
+	uint32_t foe_entry_num_1:1;
+	uint32_t ppe:1;
+	uint32_t ALG:1;
+	uint32_t IF:8;
+	uint32_t WDMAID:2;
+	uint32_t RXID:2;
+	uint32_t WCID:10;
+	uint32_t BSSID:6;
+	uint32_t rsv2:4;
+	uint16_t minfo:1;
+	uint16_t ntype:3;
+	uint16_t chid:8;
+	uint16_t rsv3:4;
+#if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
+	u16 SOURCE;
+	u16 DEST;
+#endif
+	u16 MAGIC_TAG_PROTECT;
+} __packed;
+#else
 struct head_rx_descinfo4 {
 	uint32_t foe_entry_num:14;
 	uint32_t CRSN:5;
 	uint32_t SPORT:3;
-#if defined(CONFIG_MACH_LEOPARD)
-	uint32_t foe_entry_num_32:1;
-#else
 	uint32_t rsv:1;
-#endif
 	uint32_t ALG:1;
-	uint32_t IF:8;
-	u16 MAGIC_TAG_PROTECT;
-	u8 WDMAID;
-	uint16_t RXID:2;
-	uint16_t WCID:8;
-	uint16_t BSSID:6;
-
+	uint32_t IF:4;
+	uint32_t rsv2:4;
+	uint32_t MAGIC_TAG_PROTECT: 16;
+	uint32_t WDMAID:2;
+	uint32_t RXID:2;
+	uint32_t WCID:10;
+	uint32_t BSSID:6;
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 	u16 SOURCE;
 	u16 DEST;
 #endif
 } __packed;
+#endif
 
 struct cb_rx_desc_info4 {
 	u16 MAGIC_TAG_PROTECT0;
-	uint32_t foe_entry_num:14;
+	uint32_t foe_entry_num:15;
 	uint32_t CRSN:5;
-	uint32_t SPORT:3;
-#if defined(CONFIG_MACH_LEOPARD)
-	uint32_t foe_entry_num_32:1;
-#else
-	uint32_t rsv:1;
-#endif
+	uint32_t SPORT:4;
 	uint32_t ALG:1;
-	uint32_t IF:8;
-	u16 MAGIC_TAG_PROTECT1;
-	u8 WDMAID;
+	uint32_t rsv:7;
+	uint16_t IF:8;
+	uint16_t WDMAID:2;
 	uint16_t RXID:2;
-	uint16_t WCID:8;
+	uint16_t WCID:10;
 	uint16_t BSSID:6;
+	uint16_t rsv1:4;
+	uint16_t minfo:1;
+	uint16_t ntype:3;
+	uint16_t chid:8;
+	uint16_t rsv2:4;
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 	u16 SOURCE;
 	u16 DEST;
 #endif
+	u16 MAGIC_TAG_PROTECT1;
 } __packed;
-#ifndef NEXTHDR_IPIP
-#define NEXTHDR_IPIP 4
-#endif
-/*!MT7622*/
-/*    2bytes	    4bytes          */
-/* +-----------+-------------------+*/
-/* | Magic Tag | RX/TX Desc info4  |*/
-/* +-----------+-------------------+*/
-/* |<------FOE Flow Info---------->|*/
 
-/*MT7622*/
-/*      2bytes	    4bytes	    3bytes        */
-/*   +-----------+--------------------+---------+ */
-/*   |  Magic Tag | RX/TX Desc info4  |wifi info |*/
-/*   +-----------|--------------------+---------+ */
-/*   |<-----------FOE Flow Info----------------->|*/
 
-#if defined(CONFIG_ARCH_MT7622_WIFI_HW_NAT)
-#define WIFI_INFO_LEN		    3
-#else
-#define WIFI_INFO_LEN		    0
-#endif
-#if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
+
+#define WIFI_INFO_LEN		    6
 #define FOE_INFO_LEN		    (10 + WIFI_INFO_LEN)
+
+
+#if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
+#define FOE_INFO_LEN		    (10 + 4 + WIFI_INFO_LEN)
 #define FOE_MAGIC_FASTPATH	    0x77
 #define FOE_MAGIC_L2TPPATH	    0x78
-#else
-#define FOE_INFO_LEN		    (6 + WIFI_INFO_LEN)
 #endif
 
 #define FOE_MAGIC_PCI		    0x73
 #define FOE_MAGIC_WLAN		    0x74
 #define FOE_MAGIC_GE		    0x75
 #define FOE_MAGIC_PPE		    0x76
+#define FOE_MAGIC_WED0		    0x78
+#define FOE_MAGIC_WED1		    0x79
+#define FOE_MAGIC_WED2		    0x7A
+#define FOE_MAGIC_MED		    0x80
+#define FOE_MAGIC_EDMA0		    0x81
+#define FOE_MAGIC_EDMA1		    0x82
 #define TAG_PROTECT                 0x6789
 #define USE_HEAD_ROOM               0
 #define USE_TAIL_ROOM               1
 #define USE_CB                      2
-#define ALL_INFO_ERROR                   3
+#define ALL_INFO_ERROR              3
 
+/**************************DMAD FORMAT********************************/
 #define FOE_TAG_PROTECT(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->MAGIC_TAG_PROTECT)
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->MAGIC_TAG_PROTECT)
 
-#define FOE_ENTRY_NUM_LSB(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num)
-
-#if defined(CONFIG_MACH_LEOPARD)
-#define FOE_ENTRY_NUM_MSB(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num_32)
 #define FOE_ENTRY_NUM(skb)  \
-	(((FOE_ENTRY_NUM_MSB(skb) & 0x1) << 14) | FOE_ENTRY_NUM_LSB(skb))
-#else
-#define FOE_ENTRY_NUM_MSB(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->rsv)
-#define FOE_ENTRY_NUM(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num)
-#endif
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->foe_entry_num)
 #define FOE_ALG(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->ALG)
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->ALG)
 #define FOE_AI(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->CRSN)
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->CRSN)
 #define FOE_SP(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->SPORT)
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->SPORT)
 #define FOE_MAGIC_TAG(skb)  \
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->IF)
+#define FOE_WDMA_ID(skb)  \
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->WDMAID)
+#define FOE_RX_ID(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->RXID)
+#define FOE_WC_ID(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->WCID)
+#define FOE_BSS_ID(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->BSSID)
+#define FOE_USR_INFO(skb)	\
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->USR_INFO)
+#define FOE_TID(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->TID)
+#define FOE_IS_FIXEDRATE(skb)	\
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->IS_FIXEDRATE)
+#define FOE_IS_PRIOR(skb)	\
+	(((struct dmad_rx_descinfo4 *)((skb)->head))->IS_PRIOR)
+#define FOE_IS_SP(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->IS_SP)
+#define FOE_HF(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->HF)
+#define FOE_AMSDU(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->AMSDU)
+#define FOE_PPE(skb)	(((struct dmad_rx_descinfo4 *)((skb)->head))->ppe)
+
+/***********************HEAD FORMAT*************************************/
+
+#define FOE_TAG_PROTECT_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->MAGIC_TAG_PROTECT)
+#define FOE_ENTRY_NUM_LSB_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num)
+#define FOE_ENTRY_NUM_MSB_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num_1)
+
+#define FOE_ENTRY_NUM_HEAD(skb)  \
+	(((FOE_ENTRY_NUM_MSB_HEAD(skb) & 0x1) << 14) | FOE_ENTRY_NUM_LSB_HEAD(skb))
+
+
+#define FOE_ALG_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->ALG)
+#define FOE_AI_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->CRSN)
+#define FOE_SP_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->SPORT)
+#define FOE_MAGIC_TAG_HEAD(skb)  \
 	(((struct head_rx_descinfo4 *)((skb)->head))->IF)
 
-#define FOE_WDMA_ID(skb)  \
+
+#define FOE_WDMA_ID_HEAD(skb)  \
 	(((struct head_rx_descinfo4 *)((skb)->head))->WDMAID)
-#define FOE_RX_ID(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->RXID)
-#define FOE_WC_ID(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->WCID)
-#define FOE_BSS_ID(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->BSSID)
+#define FOE_RX_ID_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->RXID)
+#define FOE_WC_ID_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->WCID)
+#define FOE_BSS_ID_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->BSSID)
+#define FOE_PPE_HEAD(skb)  \
+	(((struct head_rx_descinfo4 *)((skb)->head))->PPE)
+
+/****************************TAIL FORMAT***************************************/
+#define FOE_TAG_PROTECT_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->MAGIC_TAG_PROTECT)
+#define FOE_ENTRY_NUM_LSB_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->foe_entry_num)
+
+#define FOE_ENTRY_NUM_MSB_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->foe_entry_num_1)
+#define FOE_ENTRY_NUM_TAIL(skb)  \
+	(((FOE_ENTRY_NUM_MSB_TAIL(skb) & 0x1) << 14) | FOE_ENTRY_NUM_LSB_TAIL(skb))
+#define FOE_ALG_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->ALG)
+#define FOE_AI_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->CRSN)
+#define FOE_SP_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->SPORT)
+#define FOE_MAGIC_TAG_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->IF)
+
+#define FOE_WDMA_ID_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->WDMAID)
+#define FOE_RX_ID_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->RXID)
+#define FOE_WC_ID_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->WCID)
+#define FOE_BSS_ID_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->BSSID)
+
+#define FOE_PPE_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->ppe)
+/*********************************************************************/
+#define FOE_WDMA_ID_CB(skb)  \
+	(((struct cb_rx_desc_info4 *)((skb)->head))->WDMAID)
+#define FOE_RX_ID_CB(skb)  \
+	(((struct cb_rx_desc_info4 *)((skb)->head))->RXID)
+#define FOE_WC_ID_CB(skb)  \
+	(((struct cb_rx_desc_info4 *)((skb)->head))->WCID)
+#define FOE_BSS_ID_CB(skb)  \
+	(((struct cb_rx_desc_info4 *)((skb)->head))->BSSID)
+
+#define FOE_MINFO(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->minfo)
+#define FOE_MINFO_NTYPE(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->ntype)
+#define FOE_MINFO_CHID(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->chid)
+#define FOE_MINFO_HEAD(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->minfo)
+#define FOE_MINFO_NTYPE_HEAD(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->ntype)
+#define FOE_MINFO_CHID_HEAD(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->chid)
+
+#define FOE_MINFO_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->minfo)
+#define FOE_MINFO_NTYPE_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->ntype)
+#define FOE_MINFO_CHID_TAIL(skb)  \
+	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->chid)
 
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 #define FOE_SOURCE(skb)	(((struct head_rx_descinfo4 *)((skb)->head))->SOURCE)
@@ -292,55 +406,12 @@ struct cb_rx_desc_info4 {
 	((((skb_headroom(skb) >= FOE_INFO_LEN) ? 1 : 0)))
 #define FOE_INFO_START_ADDR_HEAD(skb)	(skb->head)
 
-#define FOE_TAG_PROTECT_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->MAGIC_TAG_PROTECT)
-#define FOE_ENTRY_NUM_LSB_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num)
-#if defined(CONFIG_MACH_LEOPARD)
-#define FOE_ENTRY_NUM_MSB_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num_32)
-#define FOE_ENTRY_NUM_HEAD(skb)  \
-	(((FOE_ENTRY_NUM_MSB_HEAD(skb) & 0x1) << 14) | FOE_ENTRY_NUM_LSB_HEAD(skb))
-#else
-#define FOE_ENTRY_NUM_MSB_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->rsv)
-#define FOE_ENTRY_NUM_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->foe_entry_num)
-#endif
-
-#define FOE_ALG_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->ALG)
-#define FOE_AI_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->CRSN)
-#define FOE_SP_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->SPORT)
-#define FOE_MAGIC_TAG_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->IF)
-
-#define FOE_WDMA_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->WDMAID)
-#define FOE_RX_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->RXID)
-#define FOE_WC_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->WCID)
-#define FOE_BSS_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->BSSID)
-
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 #define FOE_SOURCE_HEAD(skb)  \
 	(((struct head_rx_descinfo4 *)((skb)->head))->SOURCE)
 #define FOE_DEST_HEAD(skb)  \
 	(((struct head_rx_descinfo4 *)((skb)->head))->DEST)
 #endif
-
-#define FOE_WDMA_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->WDMAID)
-#define FOE_RX_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->RXID)
-#define FOE_WC_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->WCID)
-#define FOE_BSS_ID_HEAD(skb)  \
-	(((struct head_rx_descinfo4 *)((skb)->head))->BSSID)
 
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 #define FOE_SOURCE_HEAD(skb)  \
@@ -355,47 +426,12 @@ struct cb_rx_desc_info4 {
 #define FOE_INFO_START_ADDR_TAIL(skb)  \
 	((unsigned char *)(long)(skb_end_pointer(skb) - FOE_INFO_LEN))
 
-#define FOE_TAG_PROTECT_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->MAGIC_TAG_PROTECT)
-#define FOE_ENTRY_NUM_LSB_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->foe_entry_num)
-
-#if defined(CONFIG_MACH_LEOPARD)
-#define FOE_ENTRY_NUM_MSB_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->foe_entry_num_32)
-#define FOE_ENTRY_NUM_TAIL(skb)  \
-	(((FOE_ENTRY_NUM_MSB_TAIL(skb) & 0x1) << 14) | FOE_ENTRY_NUM_LSB_TAIL(skb))
-#else
-#define FOE_ENTRY_NUM_MSB_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->rsv)
-#define FOE_ENTRY_NUM_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->foe_entry_num)
-#endif
-
-#define FOE_ALG_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->ALG)
-#define FOE_AI_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->CRSN)
-#define FOE_SP_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->SPORT)
-#define FOE_MAGIC_TAG_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->IF)
-
 #if defined(CONFIG_RA_HW_NAT_PPTP_L2TP)
 #define FOE_SOURCE_TAIL(skb)  \
 	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->SOURCE)
 #define FOE_DEST_TAIL(skb)  \
 	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->DEST)
 #endif
-
-#define FOE_WDMA_ID_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->WDMAID)
-#define FOE_RX_ID_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->RXID)
-#define FOE_WC_ID_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->WCID)
-#define FOE_BSS_ID_TAIL(skb)  \
-	(((struct pdma_rx_desc_info4 *)((long)((skb_end_pointer(skb)) - FOE_INFO_LEN)))->BSSID)
 
 /* change the position of skb_CB if necessary */
 #define CB_OFFSET		    40
@@ -420,15 +456,6 @@ struct cb_rx_desc_info4 {
 #define FOE_SOURCE_CB(skb)	(((struct cb_rx_desc_info4 *)((skb)->cb + CB_OFFSET))->SOURCE)
 #define FOE_DEST_CB(skb)	(((struct cb_rx_desc_info4 *)((skb)->cb + CB_OFFSET))->DEST)
 #endif
-
-#define FOE_WDMA_ID_CB(skb)  \
-	(((struct cb_rx_desc_info4 *)((skb)->head))->WDMAID)
-#define FOE_RX_ID_CB(skb)  \
-	(((struct cb_rx_desc_info4 *)((skb)->head))->RXID)
-#define FOE_WC_ID_CB(skb)  \
-	(((struct cb_rx_desc_info4 *)((skb)->head))->WCID)
-#define FOE_BSS_ID_CB(skb)  \
-	(((struct cb_rx_desc_info4 *)((skb)->head))->BSSID)
 
 #define IS_MAGIC_TAG_PROTECT_VALID_HEAD(skb)  \
 	(FOE_TAG_PROTECT_HEAD(skb) == TAG_PROTECT)
@@ -563,5 +590,9 @@ struct hnat_ipi_cfg {
 int hnat_ipi_init(void);
 int hnat_ipi_de_init(void);
 #endif
+
+#define QDMA_RX		5
+#define PDMA_RX		0
+
 
 #endif

@@ -130,6 +130,8 @@ static int set_mux_gmac1_gmac2_to_sgmii_rgmii(struct mtk_eth *eth, int path)
 	unsigned int val = 0;
 	bool updated = true;
 
+	spin_lock(&eth->syscfg0_lock);
+
 	switch (path) {
 	case MTK_ETH_PATH_GMAC1_SGMII:
 		val = SYSCFG0_SGMII_GMAC1;
@@ -157,6 +159,8 @@ static int set_mux_gmac1_gmac2_to_sgmii_rgmii(struct mtk_eth *eth, int path)
 		regmap_update_bits(eth->ethsys, ETHSYS_SYSCFG0,
 				   SYSCFG0_SGMII_MASK, val);
 
+	spin_unlock(&eth->syscfg0_lock);
+
 	dev_dbg(eth->dev, "path %s in %s updated = %d\n",
 		mtk_eth_path_name(path), __func__, updated);
 
@@ -167,6 +171,8 @@ static int set_mux_gmac12_to_gephy_sgmii(struct mtk_eth *eth, int path)
 {
 	unsigned int val = 0;
 	bool updated = true;
+
+	spin_lock(&eth->syscfg0_lock);
 
 	regmap_read(eth->ethsys, ETHSYS_SYSCFG0, &val);
 
@@ -187,6 +193,8 @@ static int set_mux_gmac12_to_gephy_sgmii(struct mtk_eth *eth, int path)
 	if (updated)
 		regmap_update_bits(eth->ethsys, ETHSYS_SYSCFG0,
 				   SYSCFG0_SGMII_MASK, val);
+
+	spin_unlock(&eth->syscfg0_lock);
 
 	dev_dbg(eth->dev, "path %s in %s updated = %d\n",
 		mtk_eth_path_name(path), __func__, updated);
