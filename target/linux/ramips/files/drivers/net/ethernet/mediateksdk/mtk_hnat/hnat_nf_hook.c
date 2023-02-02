@@ -2465,13 +2465,13 @@ static struct nf_hook_ops mtk_hnat_nf_ops[] __read_mostly = {
 	{
 		.hook = mtk_hnat_br_nf_local_in,
 		.pf = NFPROTO_BRIDGE,
-		.hooknum = NF_BR_LOCAL_IN,
+		.hooknum = NF_BR_PRE_ROUTING,
 		.priority = NF_BR_PRI_FIRST,
 	},
 	{
 		.hook = mtk_hnat_br_nf_local_out,
 		.pf = NFPROTO_BRIDGE,
-		.hooknum = NF_BR_LOCAL_OUT,
+		.hooknum = NF_BR_POST_ROUTING,
 		.priority = NF_BR_PRI_LAST - 1,
 	},
 	{
