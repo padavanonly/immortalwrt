@@ -60,8 +60,9 @@ int mtk_sgmii_setup_mode_an(struct mtk_sgmii *ss, unsigned int id)
 		regmap_update_bits(ss->regmap[id], SGMSYS_QPHY_WRAP_CTRL,
 				   SGMII_PN_SWAP_MASK, SGMII_PN_SWAP_TX_RX);
 
-	/* Release PHYA power down state */
-	regmap_write(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, 0);
+	regmap_read(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, &val);
+	val &= ~SGMII_PHYA_PWD;
+	regmap_write(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, val);
 
 	return 0;
 }
@@ -110,9 +111,10 @@ int mtk_sgmii_setup_mode_force(struct mtk_sgmii *ss, unsigned int id,
 	if(MTK_HAS_FLAGS(ss->flags[id],MTK_SGMII_PN_SWAP))
 		regmap_update_bits(ss->regmap[id], SGMSYS_QPHY_WRAP_CTRL,
 				   SGMII_PN_SWAP_MASK, SGMII_PN_SWAP_TX_RX);
-
 	/* Release PHYA power down state */
-	regmap_write(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, 0);
+	regmap_read(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, &val);
+	val &= ~SGMII_PHYA_PWD;
+	regmap_write(ss->regmap[id], SGMSYS_QPHY_PWR_STATE_CTRL, val);
 
 	return 0;
 }
