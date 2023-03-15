@@ -12,9 +12,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/fstools.git
-PKG_MIRROR_HASH:=41c9c51d193f5150db67fcd898b6ea904b88476c94cdfd021d81e2711441b430
-PKG_SOURCE_DATE:=2021-05-16
-PKG_SOURCE_VERSION:=3d40a1b591cd569f95891116cd033b496de0f92b
+PKG_MIRROR_HASH:=edda9151c73c1adfe369f5e315347344727a540ad57d3e2b41b9f57f9d4313fe
+PKG_SOURCE_DATE:=2023-01-22
+PKG_SOURCE_VERSION:=1ea5855e980cd88766dd9f615e78e7dd6edfbb74
 CMAKE_INSTALL:=1
 
 PKG_LICENSE:=GPL-2.0
@@ -31,7 +31,6 @@ PKG_MAINTAINER:=John Crispin <john@phrozen.org>
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
-TARGET_LDFLAGS += $(if $(CONFIG_USE_GLIBC),-lrt)
 CMAKE_OPTIONS += $(if $(CONFIG_FSTOOLS_UBIFS_EXTROOT),-DCMAKE_UBIFS_EXTROOT=y)
 CMAKE_OPTIONS += $(if $(CONFIG_FSTOOLS_OVL_MOUNT_FULL_ACCESS_TIME),-DCMAKE_OVL_MOUNT_FULL_ACCESS_TIME=y)
 CMAKE_OPTIONS += $(if $(CONFIG_FSTOOLS_OVL_MOUNT_COMPRESS_ZLIB),-DCMAKE_OVL_MOUNT_COMPRESS_ZLIB=y)
@@ -39,7 +38,7 @@ CMAKE_OPTIONS += $(if $(CONFIG_FSTOOLS_OVL_MOUNT_COMPRESS_ZLIB),-DCMAKE_OVL_MOUN
 define Package/fstools
   SECTION:=base
   CATEGORY:=Base system
-  DEPENDS:=+ubox +USE_GLIBC:librt +NAND_SUPPORT:ubi-utils
+  DEPENDS:=+ubox +NAND_SUPPORT:ubi-utils
   TITLE:=OpenWrt filesystem tools
   MENU:=1
 endef
@@ -49,7 +48,7 @@ define Package/fstools/config
 		depends on PACKAGE_fstools
 		depends on NAND_SUPPORT
 		bool "Support extroot functionality with UBIFS"
-		default y
+		default n
 		help
 			This option makes it possible to use extroot functionality if the root filesystem resides on an UBIFS partition
 
@@ -75,11 +74,15 @@ define Package/snapshot-tool
   DEPENDS:=+libubox +fstools
 endef
 
+define Package/block-mount/conffiles
+/etc/config/fstab
+endef
+
 define Package/block-mount
   SECTION:=base
   CATEGORY:=Base system
   TITLE:=Block device mounting and checking
-  DEPENDS:=+ubox +libubox +libuci +libblobmsg-json +libjson-c
+  DEPENDS:=+fstools +ubox +libubox +libuci +libblobmsg-json +libjson-c
 endef
 
 define Package/blockd

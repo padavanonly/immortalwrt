@@ -8,32 +8,30 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=automount
-PKG_FLAGS:=nonshared
-PKG_RELEASE:=$(COMMITCOUNT)
-
-PKG_CONFIG_DEPENDS:=CONFIG_TARGET_ramips
+PKG_VERSION:=1
+PKG_RELEASE:=40
+PKG_ARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/automount
   TITLE:=Mount autoconfig hotplug script.
   MAINTAINER:=Lean
-  DEPENDS:=+block-mount +kmod-fs-exfat0 +kmod-fs-ext4 +kmod-fs-vfat +ntfs-3g \
-	+kmod-usb-storage +kmod-usb-storage-extras +!TARGET_ramips:kmod-usb-storage-uas
-  PKGARCH:=all
+  DEPENDS:=+block-mount +kmod-fs-exfat +kmod-fs-ext4 +kmod-fs-vfat +libblkid \
+	+kmod-usb-storage +kmod-usb-storage-extras +!TARGET_ramips:kmod-usb-storage-uas +kmod-fs-ntfs3
 endef
 
 define Package/automount/description
-  A usb autoconfig hotplug script.
+A usb autoconfig hotplug script.
 endef
 
 define Build/Compile
-	true
 endef
 
 define Package/automount/install
-	$(INSTALL_DIR) $(1)/etc/hotplug.d/block
-	$(INSTALL_BIN) ./files/15-automount $(1)/etc/hotplug.d/block/
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/15-automount $(1)/etc/15-automount
+	$(INSTALL_BIN) ./files/zzz-move-automount $(1)/etc/uci-defaults/zzz-move-automount
 endef
 
 $(eval $(call BuildPackage,automount))
