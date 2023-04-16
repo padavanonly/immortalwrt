@@ -16,12 +16,12 @@ include $(INCLUDE_DIR)/package.mk
 define Package/mtkhqos_util
   SECTION:=net
   CATEGORY:=Network
-  TITLE:=mtk hnat utility
+  TITLE:=mtk hqos utility
   VERSION:=$(PKG_RELEASE)-$(REVISION)
 endef
 
 define Package/mtkhqos_util/description
-  mtk hnat util to init hnat module
+  mtk hqos util to init hnat module
 endef
 
 define Build/Prepare
