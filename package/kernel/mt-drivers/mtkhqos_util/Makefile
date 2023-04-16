@@ -16,12 +16,12 @@ include $(INCLUDE_DIR)/package.mk
 define Package/mtkhqos_util
   SECTION:=net
   CATEGORY:=Network
-  TITLE:=mtk hqos utility
+  TITLE:=mtk hnat utility
   VERSION:=$(PKG_RELEASE)-$(REVISION)
 endef
 
 define Package/mtkhqos_util/description
-  mtk hqos util
+  mtk hnat util to init hnat module
 endef
 
 define Build/Prepare
@@ -37,10 +37,12 @@ define Package/mtkhqos_util/install
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
 
-	$(INSTALL_BIN) ./files/mtkhqos $(1)/sbin/
-	$(INSTALL_BIN) ./files/mtkhqos.config $(1)/etc/config/mtkhqos
-	$(INSTALL_BIN) ./files/mtkhqos.init $(1)/etc/init.d/mtkhqos
+	$(INSTALL_BIN) ./files/mtkhnat $(1)/sbin/
+	$(INSTALL_BIN) ./files/mtkhnat.config $(1)/etc/config/mtkhnat
+	$(INSTALL_BIN) ./files/mtkhnat.init $(1)/etc/init.d/mtkhnat
+	$(INSTALL_BIN) ./files/99-firewall $(1)/etc/uci-defaults	
 endef
 
 $(eval $(call BuildPackage,mtkhqos_util))

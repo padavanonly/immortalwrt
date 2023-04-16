@@ -1,0 +1,7 @@
+echo "iptables -I OUTPUT -t raw -p tcp --dport 1723 -j CT  --helper pptp" >> /etc/firewall.user
+echo "iptables -t mangle -A FORWARD -m dscp --dscp-class BE -j MARK --set-mark 0" >> /etc/firewall.user
+echo "iptables -t mangle -A FORWARD -m dscp --dscp-class CS2 -j MARK --set-mark 2" >> /etc/firewall.user
+echo "iptables -t mangle -A FORWARD -m dscp --dscp-class CS4 -j MARK --set-mark 4" >> /etc/firewall.user
+echo "iptables -t mangle -A FORWARD -m dscp --dscp-class CS6 -j MARK --set-mark 6" >> /etc/firewall.user
+
+exit 0

@@ -1023,7 +1023,7 @@ static int mtk_tx_map(struct sk_buff *skb, struct net_device *dev,
 
 	nr_frags = skb_shinfo(skb)->nr_frags;
 
-        qid = mac->id;
+        qid = skb->mark & (MTK_QDMA_TX_MASK);
 
 #if defined(CONFIG_MEDIATEK_NETSYS_V2) || defined(CONFIG_MEDIATEK_NETSYS_V3)
 	if(!qid && mac->id)
@@ -1811,7 +1811,6 @@ static int mtk_tx_alloc(struct mtk_eth *eth)
 		mtk_w32(eth, ring->last_free_ptr, MTK_QTX_DRX_PTR);
 		mtk_w32(eth, (QDMA_RES_THRES << 8) | QDMA_RES_THRES,
 			MTK_QTX_CFG(0));
-		mtk_w32(eth, BIT(31), MTK_QTX_SCH(0));
 	} else {
 		mtk_w32(eth, ring->phys_pdma, MT7628_TX_BASE_PTR0);
 		mtk_w32(eth, MTK_DMA_SIZE, MT7628_TX_MAX_CNT0);

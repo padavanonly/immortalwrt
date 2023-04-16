@@ -1,0 +1,126 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+config_load mtkhnat
+config_get enable global enable 0
+config_get hqos global hqos 0
+config_get txq_num global txq_num 16
+config_get scheduling global scheduling "wrr"
+config_get sch0_bw global sch0_bw 100000
+config_get sch1_bw global sch1_bw 100000
+
+# disable bridge netfilter module to avoid high cpu usage
+echo 0 > /proc/sys/net/bridge/bridge-nf-call-arptables
+echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables
+echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+echo 0 > /proc/sys/net/bridge/bridge-nf-filter-pppoe-tagged
+echo 0 > /proc/sys/net/bridge/bridge-nf-filter-vlan-tagged
+echo 0 > /proc/sys/net/bridge/bridge-nf-pass-vlan-input-dev
+echo 32768 > /proc/sys/net/netfilter/nf_conntrack_buckets
+echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
+#if hnat is not exist, switch module to mtk_ppe
+module=hnat
+[ -d /sys/kernel/debug/${module} ] || {
+	module=mtk_ppe
+	echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+	echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+}
+
+#if enable=0, disable qdma_sch & qdma_txq
+[ "${enable}" -eq 1 ] || {
+	echo 0 ${scheduling} ${sch0_bw} > /sys/kernel/debug/${module}/qdma_sch0
+	echo 0 ${scheduling} ${sch1_bw} > /sys/kernel/debug/${module}/qdma_sch1
+	echo 0 0 0 0 0 0 4 > /sys/kernel/debug/${module}/qdma_txq0
+	for i in $(seq 1 $((txq_num - 1)))
+	do
+		echo 0 0 0 0 0 0 0 > /sys/kernel/debug/${module}/qdma_txq$i
+	done
+
+	rmmod mtkhnat
+	exit 0
+}
+
+insmod mtkhnat
+
+#if hqos=0, disable qdma_sch & qdma_txq
+[ "${hqos}" -eq 1 ] || {
+        SOC=`cat /proc/device-tree/ethernet*/compatible | cut -c 10-15`
+        IS_NETSYS_V2=$(if [[ $SOC == "mt7986" ||  $SOC == "mt7981" ]]; then echo true; fi)
+
+	echo 0 ${scheduling} ${sch0_bw} > /sys/kernel/debug/${module}/qdma_sch0
+	echo 0 ${scheduling} ${sch1_bw} > /sys/kernel/debug/${module}/qdma_sch1
+
+	for i in $(seq 0 $((txq_num - 1)))
+	do
+		if [ "${i}" -le $(((txq_num / 2) - 1)) ] || [ ! $IS_NETSYS_V2 ]; then
+			echo 0 0 0 0 0 0 4 > /sys/kernel/debug/${module}/qdma_txq$i
+		else
+			echo 1 0 0 0 0 0 4 > /sys/kernel/debug/${module}/qdma_txq$i
+		fi
+	done
+
+	exit 0
+}
+
+# enable qdma_sch0 and qdma_sch1
+echo 1 ${scheduling} ${sch0_bw} > /sys/kernel/debug/${module}/qdma_sch0
+echo 1 ${scheduling} ${sch1_bw} > /sys/kernel/debug/${module}/qdma_sch1
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+
+# enable bridge netfilter module to allow skb being marked
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+
+setup_queue() {
+	local queue_id queue_scheduler queue_minebl queue_maxebl
+	local queue_minrate queue_maxrate queue_resv minrate maxrate queue_weight
+
+	config_get queue_id $1 id 0
+	config_get queue_minrate $1 minrate 0
+	config_get queue_maxrate $1 maxrate 0
+	config_get queue_resv $1 resv 4
+	config_get queue_weight $1 weight 4
+
+	# check qid < txq max num or not for loop condition
+	[ "${queue_id}" -gt $((txq_num - 1)) ] && return 0
+
+	# start to set per queue config
+	queue_minebl=1
+	queue_maxebl=1
+	queue_scheduler=0
+
+	# if min rate = 0, set min enable = 0
+	# if max rate = 0, set max enable = 0
+	[ "${queue_minrate}" -eq 0 ] && queue_minebl=0
+	[ "${queue_maxrate}" -eq 0 ] && queue_maxebl=0
+
+	# calculate min rate according to sch0_bw
+	minrate=$((sch0_bw * $queue_minrate))
+	minrate=$((minrate / 100))
+
+	# calculate max rate according to sch0_bw
+	maxrate=$((sch0_bw * $queue_maxrate))
+	maxrate=$((maxrate / 100))
+
+	# set the queue of sch0 group(the lower half of total queues)
+	[ "${queue_id}" -le $(((txq_num / 2) - 1)) ] && \
+	echo 0 ${queue_minebl} ${minrate} ${queue_maxebl} ${maxrate} ${queue_weight} \
+		${queue_resv} > /sys/kernel/debug/${module}/qdma_txq${queue_id}
+
+	# calculate min rate according to sch1_bw
+	minrate=$((sch1_bw * $queue_minrate))
+	minrate=$((minrate / 100))
+
+	# calculate max rate according to sch1_bw
+	maxrate=$((sch1_bw * $queue_maxrate))
+	maxrate=$((maxrate / 100))
+
+	# set the queue of sch1 group(the upper half of total queues)
+	[ "${queue_id}" -gt $(((txq_num / 2) - 1)) ] && \
+	echo 1 ${queue_minebl} ${minrate} ${queue_maxebl} ${maxrate} ${queue_weight} \
+		${queue_resv} > /sys/kernel/debug/${module}/qdma_txq${queue_id}
+}
+
+config_foreach setup_queue queue
