@@ -7,6 +7,7 @@
 #ifndef MTK_ETH_RESET_H
 #define MTK_ETH_RESET_H
 
+
 /* Frame Engine Reset FSM */
 #define MTK_FE_START_RESET	0x2000
 #define MTK_FE_RESET_DONE	0x2001

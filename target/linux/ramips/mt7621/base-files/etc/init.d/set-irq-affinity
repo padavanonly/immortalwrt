@@ -11,11 +11,15 @@ start() {
 		return
 	fi
 
-	for irq in $(grep -E "mt|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,')
-	do
-		echo "$mask" > "/proc/irq/$irq/smp_affinity"
-		[ $mask = 4 ] && mask=8
+	for irq in $(grep -E "mt|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,'); do
+		echo "8" > "/proc/irq/$irq/smp_affinity"
+		
 	done
+
+	for iface in $(ls /sys/class/net); do
+   [ -e "/sys/class/net/$iface/queues/rx-0/rps_cpus" ] && echo 4 > /sys/class/net/$iface/queues/rx-0/rps_cpus
+	done
+
 	modprobe mt_wifi
 	ifconfig rax0 up
 	ifconfig ra0 up
@@ -25,13 +29,4 @@ start() {
 	ifconfig apclii0 up
 	/etc/init.d/apcli.sh start
 	modprobe mtkhnat
-	echo "6" > "/sys/class/net/eth0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/ra0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/rai0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/rax0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/apcli0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/apclix0/queues/rx-0/rps_cpus"
-	echo "6" > "/sys/class/net/apclii0/queues/rx-0/rps_cpus"
-	echo "8" > "/proc/irq/23/smp_affinity"
-	echo "8" > "/proc/irq/24/smp_affinity"
 }

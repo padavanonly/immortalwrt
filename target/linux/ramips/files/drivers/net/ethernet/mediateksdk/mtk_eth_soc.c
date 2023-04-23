@@ -1023,7 +1023,7 @@ static int mtk_tx_map(struct sk_buff *skb, struct net_device *dev,
 
 	nr_frags = skb_shinfo(skb)->nr_frags;
 
-        qid = mac->id;
+        qid = skb->mark & (MTK_QDMA_TX_MASK);
 
 #if defined(CONFIG_MEDIATEK_NETSYS_V2) || defined(CONFIG_MEDIATEK_NETSYS_V3)
 	if(!qid && mac->id)
@@ -1418,7 +1418,7 @@ static int mtk_poll_rx(struct napi_struct *napi, int budget,
 			goto release_desc;
 
 		/* alloc new buffer */
-		new_data = kmalloc(ring->frag_size, GFP_ATOMIC);
+		new_data = napi_alloc_frag(ring->frag_size);
 		if (unlikely(!new_data)) {
 			netdev->stats.rx_dropped++;
 			goto release_desc;
@@ -1429,7 +1429,7 @@ static int mtk_poll_rx(struct napi_struct *napi, int budget,
 					  ring->buf_size,
 					  DMA_FROM_DEVICE);
 		if (unlikely(dma_mapping_error(eth->dev, dma_addr))) {
-			kfree(new_data);
+			skb_free_frag(new_data);
 			netdev->stats.rx_dropped++;
 			goto release_desc;
 		}
@@ -1438,9 +1438,9 @@ static int mtk_poll_rx(struct napi_struct *napi, int budget,
 				 ring->buf_size, DMA_FROM_DEVICE);
 
 		/* receive data */
-		skb = build_skb(data, 0);
+		skb = build_skb(data, ring->frag_size);
 		if (unlikely(!skb)) {
-			kfree(data);
+			skb_free_frag(data);
 			netdev->stats.rx_dropped++;
 			goto skip_rx;
 		}
@@ -1811,7 +1811,6 @@ static int mtk_tx_alloc(struct mtk_eth *eth)
 		mtk_w32(eth, ring->last_free_ptr, MTK_QTX_DRX_PTR);
 		mtk_w32(eth, (QDMA_RES_THRES << 8) | QDMA_RES_THRES,
 			MTK_QTX_CFG(0));
-		mtk_w32(eth, BIT(31), MTK_QTX_SCH(0));
 	} else {
 		mtk_w32(eth, ring->phys_pdma, MT7628_TX_BASE_PTR0);
 		mtk_w32(eth, MTK_DMA_SIZE, MT7628_TX_MAX_CNT0);
@@ -1884,7 +1883,7 @@ static int mtk_rx_alloc(struct mtk_eth *eth, int ring_no, int rx_flag)
 		return -ENOMEM;
 
 	for (i = 0; i < rx_dma_size; i++) {
-		ring->data[i] = kmalloc(ring->frag_size, GFP_ATOMIC);
+		ring->data[i] = netdev_alloc_frag(ring->frag_size);
 		if (!ring->data[i])
 			return -ENOMEM;
 	}
@@ -1971,7 +1970,7 @@ static void mtk_rx_clean(struct mtk_eth *eth, struct mtk_rx_ring *ring, int in_s
 					 ring->dma[i].rxd1,
 					 ring->buf_size,
 					 DMA_FROM_DEVICE);
-			kfree(ring->data[i]);
+			skb_free_frag(ring->data[i]);
 		}
 		kfree(ring->data);
 		ring->data = NULL;
@@ -2410,6 +2409,12 @@ static int mtk_dma_init(struct mtk_eth *eth)
 	err = mtk_tx_alloc(eth);
 	if (err)
 		return err;
+	if (MTK_HAS_CAPS(eth->soc->caps, MTK_QDMA)) {
+		err = mtk_rx_alloc(eth, 0, MTK_RX_FLAGS_QDMA);
+		if (err)
+			return err;
+	}
+
 
 	err = mtk_rx_alloc(eth, 0, MTK_RX_FLAGS_NORMAL);
 	if (err)
