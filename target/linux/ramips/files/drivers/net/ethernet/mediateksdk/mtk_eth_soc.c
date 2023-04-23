@@ -2409,6 +2409,12 @@ static int mtk_dma_init(struct mtk_eth *eth)
 	err = mtk_tx_alloc(eth);
 	if (err)
 		return err;
+	if (MTK_HAS_CAPS(eth->soc->caps, MTK_QDMA)) {
+		err = mtk_rx_alloc(eth, 0, MTK_RX_FLAGS_QDMA);
+		if (err)
+			return err;
+	}
+
 
 	err = mtk_rx_alloc(eth, 0, MTK_RX_FLAGS_NORMAL);
 	if (err)
