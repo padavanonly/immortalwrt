@@ -2331,11 +2331,8 @@ int RtmpOSIRQRequest(UINT32 irq, const CHAR *name, VOID *func, VOID *data)
 {
 	int retval = 0;
 
-#if defined(CONFIG_ARCH_MT7623) || defined(CONFIG_ARCH_MT7622) || defined(MT7622)
-	retval = request_irq(irq, func, IRQF_SHARED | IRQF_TRIGGER_LOW, name, data);
-#else
+
 	retval = request_irq(irq, func, IRQF_SHARED, name, data);
-#endif
 
 	if (retval != 0)
 		MTWF_LOG(DBG_CAT_INIT, DBG_SUBCAT_ALL, DBG_LVL_OFF, ("request_irq ERROR(%d)\n", retval));

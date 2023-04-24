@@ -121,9 +121,7 @@ endif
 # support built-in/ko for Openwrt/Linux SDK
 obj-y += $(DRV_NAME).o
 
-ifeq ($(CONFIG_MTK_EMI_7622),y)
-EXTRA_CFLAGS += -DCONFIG_ARCH_MT7622
-endif
+
 
 
 EXTRA_CFLAGS += -DWIFI_SYS_FW_V1
@@ -261,10 +259,10 @@ EXTRA_CFLAGS += -DCFG_SUPPORT_FALCON_PP
 cmm_objs +=$(SRC_EMBEDDED_DIR)/common/pp_cmd.o
 endif
 
-ifeq ($(CONFIG_RPS_EFFICIENCY),y)
+
 EXTRA_CFLAGS += -DDYNAMIC_STEERING_LOADING
 cmm_objs +=$(SRC_EMBEDDED_DIR)/common/dyn_steering_ld.o
-endif
+
 
 ifeq ($(CONFIG_PROFILING_SUPPORT),y)
 EXTRA_CFLAGS += -DCONFIG_PROFILING_SUPPORT
@@ -935,11 +933,9 @@ ifeq ($(CONFIG_MUMIMO_SUPPORT),y)
     EXTRA_CFLAGS += -DCFG_SUPPORT_MU_MIMO
     ap_objs += $(SRC_EMBEDDED_DIR)/common/cmm_mumimo.o
     ap_objs += $(SRC_EMBEDDED_DIR)/ap/ap_mumimo.o
-ifneq ($(CONFIG_MUMIMO_PLATFORM_PERFORMANCE_LEVEL),)
-    EXTRA_CFLAGS += -DCFG_MUMIMO_PLATFORM_PERFORMANCE_LEVEL=$(CONFIG_MUMIMO_PLATFORM_PERFORMANCE_LEVEL)
-endif
-endif
+    EXTRA_CFLAGS += -DCFG_MUMIMO_PLATFORM_PERFORMANCE_LEVEL=2
 
+endif
 ifeq ($(CONFIG_MU_RA_SUPPORT),y)
    EXTRA_CFLAGS += -DCFG_SUPPORT_MU_MIMO_RA
    ap_objs += $(SRC_EMBEDDED_DIR)/ap/ap_mura.o
@@ -1153,9 +1149,8 @@ ifeq ($(CONFIG_HDR_TRANS_RX_SUPPORT),y)
 endif
 
 
-ifeq ($(CONFIG_SMP),y)
+
 EXTRA_CFLAGS += -DSW_RPS_RX_OFFLOAD_SUPPORT
-endif
 
 
 ifeq ($(CONFIG_VLAN_SUPPORT),y)
