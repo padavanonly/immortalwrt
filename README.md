@@ -51,7 +51,7 @@ To build your own firmware you need a GNU/Linux, BSD or MacOSX system (case sens
 
   ### Quickstart
   - Method 1:
-    1. Run `git clone https://github.com/padavanonly/immortalwrt` to clone the source code.
+    1. Run `git clone  -b mt7915_mtwifi --single-branch https://github.com/padavanonly/immortalwrt` to clone the source code.
     2. Run `cd immortalwrt` to enter source directory.
     3. Run `./scripts/feeds update -a` to obtain all the latest package definitions defined in feeds.conf / feeds.conf.default
     4. Run `./scripts/feeds install -a` to install symlinks for all obtained packages into package/feeds/
