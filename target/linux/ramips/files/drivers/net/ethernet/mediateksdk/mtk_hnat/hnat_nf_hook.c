@@ -1345,44 +1345,11 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 					foe->ipv6_5t_route.dport;
 			}
 
-#if defined(CONFIG_MEDIATEK_NETSYS_V3)
+
 			if (ct && (ct->status & IPS_SRC_NAT)) {
-				entry.bfib1.pkt_type = IPV6_HNAPT;
-
-				if (IS_WAN(dev) || IS_DSA_WAN(dev)) {
-					entry.ipv6_hnapt.eg_ipv6_dir =
-						IPV6_SNAT;
-					entry.ipv6_hnapt.new_ipv6_ip0 =
-						ntohl(ip6h->saddr.s6_addr32[0]);
-					entry.ipv6_hnapt.new_ipv6_ip1 =
-						ntohl(ip6h->saddr.s6_addr32[1]);
-					entry.ipv6_hnapt.new_ipv6_ip2 =
-						ntohl(ip6h->saddr.s6_addr32[2]);
-					entry.ipv6_hnapt.new_ipv6_ip3 =
-						ntohl(ip6h->saddr.s6_addr32[3]);
-				} else {
-					entry.ipv6_hnapt.eg_ipv6_dir =
-						IPV6_DNAT;
-					entry.ipv6_hnapt.new_ipv6_ip0 =
-						ntohl(ip6h->daddr.s6_addr32[0]);
-					entry.ipv6_hnapt.new_ipv6_ip1 =
-						ntohl(ip6h->daddr.s6_addr32[1]);
-					entry.ipv6_hnapt.new_ipv6_ip2 =
-						ntohl(ip6h->daddr.s6_addr32[2]);
-					entry.ipv6_hnapt.new_ipv6_ip3 =
-						ntohl(ip6h->daddr.s6_addr32[3]);
-				}
-
-				pptr = skb_header_pointer(skb, IPV6_HDR_LEN,
-							  sizeof(_ports),
-							  &_ports);
-				if (unlikely(!pptr))
-					return -1;
-
-				entry.ipv6_hnapt.new_sport = ntohs(pptr->src);
-				entry.ipv6_hnapt.new_dport = ntohs(pptr->dst);
+				return -1;
 			}
-#endif
+
 
 			entry.ipv6_5t_route.iblk2.dscp =
 				(ip6h->priority << 4 |
@@ -2537,4 +2504,3 @@ int mtk_hqos_ptype_cb(struct sk_buff *skb, struct net_device *dev,
 
 	return 0;
 }
-
