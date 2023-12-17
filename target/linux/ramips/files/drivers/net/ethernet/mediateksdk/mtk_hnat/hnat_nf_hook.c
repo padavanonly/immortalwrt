@@ -2092,6 +2092,8 @@ static unsigned int mtk_hnat_nf_post_routing(
 
 	if (unlikely(!skb_hnat_is_hashed(skb)))
 		return 0;
+	if (unlikely(skb->mark == 0x99))
+		return 0;
 
 	if (out->netdev_ops->ndo_hnat_check) {
 		if (out->netdev_ops->ndo_hnat_check(&hw_path))
