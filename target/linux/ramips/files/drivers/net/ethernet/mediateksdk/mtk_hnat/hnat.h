@@ -1075,8 +1075,9 @@ enum FoeIpAct {
 #define NR_GMAC3_PORT 15
 #define LAN_DEV_NAME hnat_priv->lan
 #define LAN2_DEV_NAME hnat_priv->lan2
+
 #define IS_WAN(dev)                                                            \
-	(!strncmp((dev)->name, hnat_priv->wan, strlen(hnat_priv->wan)))
+		((!strncmp((dev)->name, hnat_priv->wan, strlen(hnat_priv->wan))) || (!strncmp((dev)->name, "macvlan", 7)))
 #define IS_LAN_GRP(dev) (IS_LAN(dev) | IS_LAN2(dev))
 #define IS_LAN(dev) (!strncmp(dev->name, LAN_DEV_NAME, strlen(LAN_DEV_NAME)))
 #define IS_LAN2(dev) (!strncmp(dev->name, LAN2_DEV_NAME,			\
