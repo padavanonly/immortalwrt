@@ -36,7 +36,7 @@ index 2aa7473..57eead0 100644
  
  	if (!fw3_is_family(zone, handle->family))
  		return;
-@@ -712,8 +713,22 @@ print_zone_rule(struct fw3_ipt_handle *h
+@@ -712,8 +713,19 @@ print_zone_rule(struct fw3_ipt_handle *h
  				{
  					r = fw3_ipt_rule_new(handle);
  					fw3_ipt_rule_src_dest(r, msrc, mdest);
@@ -45,17 +45,14 @@ index 2aa7473..57eead0 100644
 +					/*FIXME: Workaround for FULLCONE-NAT*/
 +					if(defs->fullcone)
 +					{
-+						warn("%s will enable FULLCONE-NAT", zone->name);
-+						fw3_ipt_rule_target(r, "FULLCONENAT");
++						fw3_ipt_rule_target(r, "MASQUERADE");
++						fw3_ipt_rule_extra(r, "--mode fullcone");
 +						fw3_ipt_rule_append(r, "zone_%s_postrouting", zone->name);
-+						r = fw3_ipt_rule_new(handle);
-+						fw3_ipt_rule_src_dest(r, msrc, mdest);
-+						fw3_ipt_rule_target(r, "FULLCONENAT");
-+						fw3_ipt_rule_append(r, "zone_%s_prerouting", zone->name);
 +					}
 +					else
 +					{
 +						fw3_ipt_rule_target(r, "MASQUERADE");
++						fw3_ipt_rule_extra(r, "--mode symmetric");
 +						fw3_ipt_rule_append(r, "zone_%s_postrouting", zone->name);
 +					}
  				}

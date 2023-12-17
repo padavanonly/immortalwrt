@@ -11,7 +11,14 @@ msgstr ""
 
 
 msgid "EQoS"
-msgstr "网速控制"
+msgstr "网速控制（MT7621支持有线上下行，无线下行）"
+
+msgid "WFQ"
+msgstr "公平队列模式"
+
+msgid "WFQ  MODE"
+msgstr "开启后，每条规则的转发权重相等，但规则将对无线内网速率将会生效"
+
 
 msgid "eqos"
 msgstr "网速控制"

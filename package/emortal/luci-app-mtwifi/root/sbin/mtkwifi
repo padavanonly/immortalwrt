@@ -15,7 +15,6 @@ end
 
 function wifi_common_up(devname)
 	nixio.syslog("debug", "wifi_common_up "..tostring(devname))
-
 	-- need to find out the vif prefix for this device
 	for _,vif in ipairs(string.split(mtkwifi.read_pipe("ls /sys/class/net"), "\n"))
 	do
@@ -98,6 +97,7 @@ for _,f in ipairs(string.split(mtkwifi.read_pipe("find /lib/wifi/ -name \"*.lua\
 end
 
 function wifi(cmd, devname)
+	os.execute("/etc/init.d/apcli.sh start")
 	local mtkwifi = require("mtkwifi")
 	local devs, l1parser = mtkwifi.__get_l1dat()
 	if not devs or not l1parser then
