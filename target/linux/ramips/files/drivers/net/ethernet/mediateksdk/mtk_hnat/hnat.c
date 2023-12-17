@@ -370,7 +370,7 @@ static int hnat_hw_init(u32 ppe_id)
 	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_BIND_LMT_0, HALF_LMT, 16383);
 	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_BIND_LMT_1, FULL_LMT, 16383);
 	/* setup binding threshold as 30 packets per second */
-	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_BNDR, BIND_RATE, 0x1E);
+	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_BNDR, BIND_RATE, 0x5);
 
 	/* setup FOE cf gen */
 	cr_set_field(hnat_priv->ppe_base[ppe_id] + PPE_GLO_CFG, PPE_EN, 1);
