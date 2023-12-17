@@ -2171,6 +2171,12 @@ mtk_hnat_ipv6_nf_local_out(void *priv, struct sk_buff *skb,
 
 	if (unlikely(!skb_hnat_is_hashed(skb)))
 		return NF_ACCEPT;
+	ip6h = ipv6_hdr(skb);
+
+       if (ip6h->nexthdr != NEXTHDR_IPIP) {
+               hnat_set_head_frags(state, skb, 1, hnat_set_alg);
+               return NF_ACCEPT;
+       }
 
 	if (skb_hnat_entry(skb) >= hnat_priv->foe_etry_num ||
 	    skb_hnat_ppe(skb) >= CFG_PPE_NUM)
@@ -2178,7 +2184,6 @@ mtk_hnat_ipv6_nf_local_out(void *priv, struct sk_buff *skb,
 
 	entry = &hnat_priv->foe_table_cpu[skb_hnat_ppe(skb)][skb_hnat_entry(skb)];
 	if (skb_hnat_reason(skb) == HIT_UNBIND_RATE_REACH) {
-		ip6h = ipv6_hdr(skb);
 		if (ip6h->nexthdr == NEXTHDR_IPIP) {
 			/* Map-E LAN->WAN: need to record orig info before fn. */
 			if (mape_toggle) {
@@ -2357,9 +2362,11 @@ static unsigned int
 mtk_hnat_ipv4_nf_local_out(void *priv, struct sk_buff *skb,
 			   const struct nf_hook_state *state)
 {
-	struct sk_buff *new_skb;
 	struct foe_entry *entry;
 	struct iphdr *iph;
+
+	if (unlikely(skb_headroom(skb) < FOE_INFO_LEN))
+ 		return NF_ACCEPT;
 
 	if (!skb_hnat_is_hashed(skb))
 		return NF_ACCEPT;
@@ -2369,16 +2376,6 @@ mtk_hnat_ipv4_nf_local_out(void *priv, struct sk_buff *skb,
 		return NF_ACCEPT;
 
 	entry = &hnat_priv->foe_table_cpu[skb_hnat_ppe(skb)][skb_hnat_entry(skb)];
-
-	if (unlikely(skb_headroom(skb) < FOE_INFO_LEN)) {
-		new_skb = skb_realloc_headroom(skb, FOE_INFO_LEN);
-		if (!new_skb) {
-			dev_info(hnat_priv->dev, "%s:drop\n", __func__);
-			return NF_DROP;
-		}
-		dev_kfree_skb(skb);
-		skb = new_skb;
-	}
 
 	/* Make the flow from local not be bound. */
 	iph = ip_hdr(skb);
