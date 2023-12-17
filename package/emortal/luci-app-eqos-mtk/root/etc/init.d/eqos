@@ -33,7 +33,7 @@ start_service() {
 	config_get upload "config" "upload"
 	config_get comment "comment" "comment"
 	
-	eqos start "$download" "$upload" "$comment"
+	eqos start "$download" "$upload" "$comment" 
 	ip6tables -t mangle -N eqos
         ip6tables -t mangle -F eqos
         ebtables -t nat  -N eqos

@@ -6,6 +6,7 @@ s.anonymous = true
 local e = s:option(Flag, "enabled", translate("Enable"))
 e.rmempty = false
 
+
 local dl = s:option(Value, "download", translate("Download speed (Mbit/s)"))
 dl.description = translate("Total bandwidth")
 dl.datatype = "and(uinteger,min(1))"
