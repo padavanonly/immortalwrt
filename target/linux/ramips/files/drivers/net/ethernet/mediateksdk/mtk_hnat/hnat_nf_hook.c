@@ -1577,6 +1577,7 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 	if ((IS_HQOS_MODE) && (dscp!=0) )
  		qid = (dscp>>2)& (MTK_QDMA_TX_MASK);
 
+
 	if (IS_IPV4_GRP(foe)) {
 		entry.ipv4_hnapt.iblk2.dp = gmac;
 		entry.ipv4_hnapt.iblk2.port_mg =
@@ -2091,6 +2092,8 @@ static unsigned int mtk_hnat_nf_post_routing(
 		return 0;
 
 	if (unlikely(!skb_hnat_is_hashed(skb)))
+		return 0;
+	if (unlikely(skb->mark == 0x99))
 		return 0;
 
 	if (out->netdev_ops->ndo_hnat_check) {
