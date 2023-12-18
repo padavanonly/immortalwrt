@@ -345,6 +345,7 @@ check_status(){
 		fi
 		;;
 	"fullconenat")
+		
 			exit 0 
 		;;
 	"bbr")
