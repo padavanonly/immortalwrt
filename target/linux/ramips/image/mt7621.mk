@@ -998,8 +998,8 @@ define Device/lenovo_newifi-d1
   IMAGE_SIZE := 32448k
   DEVICE_VENDOR := Newifi
   DEVICE_MODEL := D1
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3 kmod-sdhci-mt7620 \
-	kmod-usb-ledtrig-usbport
+  DEVICE_PACKAGES := kmod-mt7603e kmod-mt76x2e kmod-usb3 \
+	kmod-usb-ledtrig-usbport luci-app-mtwifi
   SUPPORTED_DEVICES += newifi-d1
 endef
 TARGET_DEVICES += lenovo_newifi-d1
@@ -2007,8 +2007,8 @@ define Device/youhua_wr1200js
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := YouHua
   DEVICE_MODEL := WR1200JS
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3 \
-	kmod-usb-ledtrig-usbport
+  DEVICE_PACKAGES := kmod-mt7603e kmod-mt76x2e kmod-usb3 \
+	kmod-usb-ledtrig-usbport luci-app-mtwifi
 endef
 TARGET_DEVICES += youhua_wr1200js
 
@@ -2017,8 +2017,8 @@ define Device/youku_yk-l2
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Youku
   DEVICE_MODEL := YK-L2
-  DEVICE_PACKAGES := kmod-mt7603 kmod-mt76x2 kmod-usb3 \
-	kmod-usb-ledtrig-usbport
+  DEVICE_PACKAGES := kmod-mt7603e kmod-mt76x2e kmod-usb3 \
+	kmod-usb-ledtrig-usbport luci-app-mtwifi
 endef
 TARGET_DEVICES += youku_yk-l2
 
