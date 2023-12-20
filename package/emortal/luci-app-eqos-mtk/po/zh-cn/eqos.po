@@ -42,7 +42,7 @@ msgid "Upload speed (Mbit/s)"
 msgstr "上传速度 (Mbit/s)"
 
 msgid "Speed limit based on IP address(using unique comment which is less than 8 will enable hardware QOS)"
-msgstr "基于 IP 限速(设置小于32唯一编号将启用硬件QOS.速度设置为0则取消限速)"
+msgstr "基于 IP 限速(设置小于8唯一编号将启用硬件QOS.速度设置为0则取消限速)"
 
 msgid "Total bandwidth"
 msgstr "总带宽"
