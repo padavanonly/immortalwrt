@@ -55,6 +55,7 @@ else ifeq ($(CONFIG_MTK_CHIP_MT7603E_MT7615E),y)
 else ifeq ($(CONFIG_MTK_CHIP_MT7615E_DBDC),y)
 	$(INSTALL_BIN) ./files/7615d.l1profile.dat $(1)/etc/wireless/l1profile.dat
 	$(INSTALL_BIN) ./files/mt7615.1.2G.dat $(1)/etc/wireless/mt7615/
+	$(INSTALL_BIN) ./files/mt7615.1.5G.dat $(1)/etc/wireless/mt7615/
 	$(INSTALL_BIN) ./files/apcli_7615d.sh $(1)/etc/init.d/apcli.sh
 else ifeq ($(CONFIG_MTK_CHIP_MT7915E_DBDC),y)
 	$(INSTALL_BIN) ./files/7915d.l1profile.dat $(1)/etc/wireless/l1profile.dat

@@ -6,10 +6,6 @@ s.anonymous = true
 local e = s:option(Flag, "enabled", translate("Enable"))
 e.rmempty = false
 
-local wfq = s:option(Flag, "wfq", translate("WFQ"))
-wfq.rmempty = false
-wfq.description = translate("WFQ  MODE")
-
 
 local dl = s:option(Value, "download", translate("Download speed (Mbit/s)"))
 dl.description = translate("Total bandwidth")
