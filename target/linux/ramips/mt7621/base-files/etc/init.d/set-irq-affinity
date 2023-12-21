@@ -24,10 +24,10 @@ start() {
 	ifconfig rax0 up
 	ifconfig ra0 up
 	ifconfig rai0 up
-	ifconfig apclix0 up
-	ifconfig apcli0 up
-	ifconfig apclii0 up
-	/etc/init.d/apcli.sh start
+#ifconfig apclix0 up
+#ifconfig apcli0 up
+#ifconfig apclii0 up
+#/etc/init.d/apcli.sh start
 	modprobe mtkhnat
 	echo 32768 > /proc/sys/net/netfilter/nf_conntrack_buckets
 	echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
