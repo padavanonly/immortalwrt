@@ -3,32 +3,27 @@
 START=99
 
 start() {
-	if grep -q 'processor.*: 2' /proc/cpuinfo; then
-		mask=4
-	elif grep -q 'processor.*: 1' /proc/cpuinfo; then
-		mask=2
-	else
-		return
-	fi
-
-	for irq in $(grep -E "mt|ra" /proc/interrupts | cut -d: -f1 | sed 's, *,,'); do
-		echo "2" > "/proc/irq/$irq/smp_affinity"
-		
-	done
-
-	for iface in $(ls /sys/class/net); do
-   [ -e "/sys/class/net/$iface/queues/rx-0/rps_cpus" ] && echo 4 > /sys/class/net/$iface/queues/rx-0/rps_cpus
-	done
+	echo "2" > "/proc/irq/21/smp_affinity"
+	echo "4" > "/proc/irq/24/smp_affinity"
+	echo "8" > "/proc/irq/23/smp_affinity"
+	echo 5 > /sys/class/net/eth0/queues/rx-0/rps_cpus
+	echo 5 > /sys/class/net/eth1/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/ra0/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/rax0/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/apcli0/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/apclix0/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/rai0/queues/rx-0/rps_cpus
+	echo 3 > /sys/class/net/apclii0/queues/rx-0/rps_cpus
+	
 
 	modprobe mt_wifi
-	ifconfig rax0 up
+	ifconfig rax0 up`. 
 	ifconfig ra0 up
 	ifconfig rai0 up
-	ifconfig apclix0 up
-	ifconfig apcli0 up
-	ifconfig apclii0 up
+	/etc/init.d/apcli.sh start
 	/etc/init.d/apcli.sh start
 	modprobe mtkhnat
 	echo 32768 > /proc/sys/net/netfilter/nf_conntrack_buckets
 	echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
+
 }
