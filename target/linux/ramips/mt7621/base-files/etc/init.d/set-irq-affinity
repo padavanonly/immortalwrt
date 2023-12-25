@@ -17,7 +17,7 @@ start() {
 	
 
 	modprobe mt_wifi
-	ifconfig rax0 up`. 
+	ifconfig rax0 up
 	ifconfig ra0 up
 	ifconfig rai0 up
 	/etc/init.d/apcli.sh start
