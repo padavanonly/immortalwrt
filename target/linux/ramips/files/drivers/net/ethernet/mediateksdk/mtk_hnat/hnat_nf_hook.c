@@ -521,7 +521,7 @@ unsigned int do_hnat_ge_to_ext(struct sk_buff *skb, const char *func)
 		skb_set_network_header(skb, 0);
 		skb_push(skb, ETH_HLEN);
 		if (skb_hnat_reason(skb) == HIT_BIND_FORCE_TO_CPU) {
-			printk_ratelimited("[%s] reason=0x%x(force to CPU) from WAN to Ext\n",
+			trace_printk("[%s] reason=0x%x(force to CPU) from WAN to Ext\n",
 				     __func__, skb_hnat_reason(skb));
 			skb->pkt_type = PACKET_HOST;
 		}
