@@ -34,7 +34,7 @@
 #include "../mtk_eth_reset.h"
 
 #define do_ge2ext_fast(dev, skb)                                               \
-	((IS_LAN_GRP(dev) || IS_WAN(dev) || IS_PPD(dev)) && \
+	((IS_LAN(dev) || IS_WAN(dev) || IS_PPD(dev) || IS_EXT(dev)) && \
 	 skb_hnat_is_hashed(skb) && \
 	 skb_hnat_reason(skb) == HIT_BIND_FORCE_TO_CPU)
 #define do_ext2ge_fast_learn(dev, skb)                                         \
@@ -520,6 +520,11 @@ unsigned int do_hnat_ge_to_ext(struct sk_buff *skb, const char *func)
 	if (skb->dev) {
 		skb_set_network_header(skb, 0);
 		skb_push(skb, ETH_HLEN);
+		if (skb_hnat_reason(skb) == HIT_BIND_FORCE_TO_CPU) {
+			printk_ratelimited("[%s] reason=0x%x(force to CPU) from WAN to Ext\n",
+				     __func__, skb_hnat_reason(skb));
+			skb->pkt_type = PACKET_HOST;
+		}
 		dev_queue_xmit(skb);
 		trace_printk("%s: called from %s successfully\n", __func__,
 			     func);
@@ -1539,7 +1544,7 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 			gmac = (IS_GMAC1_MODE) ? NR_GMAC1_PORT : NR_GMAC2_PORT;
 		}
 	} else if (IS_EXT(dev) && (FROM_GE_PPD(skb) || FROM_GE_LAN_GRP(skb) ||
-		   FROM_GE_WAN(skb) || FROM_GE_VIRTUAL(skb) || FROM_WED(skb))) {
+		   FROM_GE_WAN(skb) || FROM_GE_VIRTUAL(skb) || FROM_EXT(skb))) {
 		if (!hnat_priv->data->whnat && IS_GMAC1_MODE) {
 			entry.bfib1.vpm = 1;
 			entry.bfib1.vlan_layer = 1;
@@ -2092,7 +2097,8 @@ static unsigned int mtk_hnat_nf_post_routing(
 
 	if (unlikely(!skb_hnat_is_hashed(skb)))
 		return 0;
-	if (unlikely(skb->mark == 0x99))
+		
+	if (unlikely((skb->mark == 0x99) && IS_EXT(out)) )
 		return 0;
 
 	if (out->netdev_ops->ndo_hnat_check) {
