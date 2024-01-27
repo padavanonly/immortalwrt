@@ -151,7 +151,7 @@
         mtketh-wan = "eth1";
         mtketh-ppd = "eth0";
         mtketh-lan = "eth0";
-	ext-devices = "wlan0","wlan1","rax0","ra0", "rai0","apclii0","apclix0", "apcli0","usb0","wwan0"，"wwan0.1","wwan0_1";
+	ext-devices = "wlan0","wlan1","rax0","ra0", "rai0","apclii0","apclix0", "apcli0","usb0","wwan0","wwan0.1","wwan0_1";
         mtketh-max-gmac = <2>;
         status = "okay";
 };
