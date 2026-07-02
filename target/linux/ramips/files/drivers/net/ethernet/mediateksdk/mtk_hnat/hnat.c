@@ -731,7 +731,7 @@ static int hnat_probe(struct platform_device *pdev)
 
 	err = of_property_read_string(np, "mtketh-lan2", &name);
 	if (err < 0)
-		strncpy(hnat_priv->lan2, "eth2", IFNAMSIZ);
+		strncpy(hnat_priv->lan2, "none", IFNAMSIZ);
 	else
 		strncpy(hnat_priv->lan2, (char *)name, IFNAMSIZ - 1);
 	dev_info(&pdev->dev, "lan2 = %s\n", hnat_priv->lan2);
